@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#05070a">
   <title>Sports Command Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10,94 +11,66 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main class="dashboard" aria-label="Sports command center">
+  <main class="dashboard">
     <header class="topbar">
       <div>
-        <div class="eyebrow">THE CAVE SPORTS NETWORK</div>
-        <div class="date" id="date">TUESDAY · AUG 4</div>
+        <div class="eyebrow" id="networkName">THE CAVE SPORTS NETWORK</div>
+        <div class="date" id="date">LOADING DATE</div>
       </div>
       <div class="status-cluster">
-        <div class="data-status"><span class="live-dot"></span> DATA ONLINE</div>
-        <div class="clock" id="clock">1:00</div>
+        <div class="data-status"><span class="live-dot"></span><span id="dataStatus">DEMO DATA</span></div>
+        <div class="clock" id="clock">--:--</div>
       </div>
     </header>
 
+    <nav class="sport-strip" id="sportStrip" aria-label="Sports included"></nav>
+
     <section class="hero" id="hero">
-      <div class="hero-backdrop"></div>
+      <div class="hero-scan"></div>
       <div class="hero-content">
-        <div class="hero-kicker">
-          <span class="league-pill" id="heroLeague">NFL</span>
-          <span id="heroStatus">FEATURED MATCHUP</span>
-        </div>
-        <div class="hero-title" id="heroTitle">SUNDAY NIGHT FOOTBALL</div>
+        <div class="hero-kicker"><span class="league-pill" id="heroLeague">NFL</span><span id="heroStatus">FEATURED</span></div>
+        <div class="hero-title" id="heroTitle">SPORTS COMMAND CENTER</div>
         <div class="matchup">
           <div class="team">
             <div class="team-mark" id="awayMark">DAL</div>
-            <div>
-              <div class="team-name" id="awayName">COWBOYS</div>
-              <div class="team-record" id="awayRecord">0–0</div>
-            </div>
+            <div><div class="team-name" id="awayName">COWBOYS</div><div class="team-record" id="awayRecord">0–0</div></div>
           </div>
           <div class="score-center">
             <div class="countdown-label" id="gameMeta">KICKOFF IN</div>
             <div class="score" id="score">02:18:44</div>
-            <div class="venue" id="venue">AT&T STADIUM · ARLINGTON</div>
+            <div class="venue" id="venue">ARLINGTON, TEXAS</div>
           </div>
           <div class="team team-right">
-            <div>
-              <div class="team-name" id="homeName">EAGLES</div>
-              <div class="team-record" id="homeRecord">0–0</div>
-            </div>
+            <div><div class="team-name" id="homeName">EAGLES</div><div class="team-record" id="homeRecord">0–0</div></div>
             <div class="team-mark" id="homeMark">PHI</div>
           </div>
         </div>
       </div>
+      <div class="hero-progress"><span id="heroProgress"></span></div>
     </section>
 
-    <section class="ticker ticker-breaking" aria-label="Breaking sports updates">
-      <div class="ticker-label">BREAKING</div>
-      <div class="ticker-window">
-        <div class="ticker-track" id="breakingTicker"></div>
-      </div>
+    <section class="ticker ticker-breaking"><div class="ticker-label">BREAKING</div><div class="ticker-window"><div class="ticker-track" id="breakingTicker"></div></div></section>
+
+    <section class="section-block">
+      <div class="section-heading"><span>SCOREBOARD</span><span class="muted">NFL · NBA · MLB</span></div>
+      <div class="league-grid" id="leagueGrid"></div>
     </section>
 
-    <section class="league-grid" id="leagueGrid"></section>
-
-    <section class="race-wall">
-      <div class="section-heading">
-        <span>RACE CONTROL</span>
-        <span class="muted">F1 + INDYCAR</span>
-      </div>
+    <section class="section-block">
+      <div class="section-heading"><span>RACE CONTROL</span><span class="muted">F1 · INDYCAR</span></div>
       <div class="race-cards" id="raceCards"></div>
     </section>
 
-    <section class="headlines">
-      <div class="section-heading">
-        <span>TOP STORIES</span>
-        <span class="muted" id="storyCounter">01 / 05</span>
-      </div>
-      <article class="story-card">
-        <div class="story-league" id="storyLeague">MLB</div>
-        <div>
-          <h2 id="storyHeadline">Trade deadline pressure rises as contenders hunt for pitching.</h2>
-          <p id="storySummary">A rotating headline module will pull from selected feeds and automatically remove duplicate stories.</p>
-        </div>
-      </article>
+    <section class="section-block">
+      <div class="section-heading"><span>TOP STORIES</span><span class="muted" id="storyCounter">01 / 05</span></div>
+      <article class="story-card"><div class="story-league" id="storyLeague">MLB</div><div><h2 id="storyHeadline"></h2><p id="storySummary"></p></div></article>
     </section>
 
-    <section class="ticker ticker-upcoming" aria-label="Upcoming sports schedule">
-      <div class="ticker-label">NEXT UP</div>
-      <div class="ticker-window">
-        <div class="ticker-track reverse" id="upcomingTicker"></div>
-      </div>
-    </section>
+    <section class="ticker ticker-upcoming"><div class="ticker-label">NEXT UP</div><div class="ticker-window"><div class="ticker-track reverse" id="upcomingTicker"></div></div></section>
 
-    <footer class="footer">
-      <span>LAST UPDATE <strong id="lastUpdate">1:00:00 AM</strong></span>
-      <span>PORTRAIT MODE · 1080 × 1920</span>
-    </footer>
+    <footer class="footer"><span>LAST UPDATE <strong id="lastUpdate">--</strong></span><span id="displayMode">PORTRAIT COMMAND MODE</span></footer>
   </main>
-
+  <script src="config.js"></script>
   <script src="mock-data.js"></script>
   <script src="app.js"></script>
 </body>

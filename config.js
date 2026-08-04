@@ -1,12 +1,12 @@
 window.DASHBOARD_CONFIG = {
-  version: "3.0",
+  version: "3.1",
   networkName: "THE CAVE SPORTS NETWORK",
-  accent: "#ff4d1f",
-  accentAlt: "#ffc247",
+  accent: "#e10600",
+  accentAlt: "#f4f4f4",
   timeFormat: "12h",
-  heroRotationMs: 11000,
-  storyRotationMs: 8500,
-  tickerSpeedSeconds: 42,
+  heroRotationMs: 10500,
+  storyRotationMs: 8200,
+  tickerSpeedSeconds: 40,
   enabledSports: ["NFL", "NBA", "MLB", "F1", "INDYCAR"],
   favorites: {
     nfl: ["DAL"],
@@ -28,5 +28,11 @@ window.DASHBOARD_CONFIG = {
     raceControl: true,
     quietHoursStart: 23,
     quietHoursEnd: 7
+  },
+  visualSystem: {
+    name: "Apex Broadcast",
+    clippedPanels: true,
+    telemetryLines: true,
+    highContrastNumbers: true
   }
 };

@@ -3,57 +3,54 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#05070a">
-  <title>Sports Command Center</title>
+  <meta name="theme-color" content="#050608">
+  <title>Sports Command Center v3.2</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="v3.2.css">
 </head>
 <body>
-  <main class="dashboard">
+  <main class="dashboard" id="dashboard">
     <header class="topbar">
-      <div>
-        <div class="eyebrow" id="networkName">THE CAVE SPORTS NETWORK</div>
-        <div class="date" id="date">LOADING DATE</div>
-      </div>
-      <div class="status-cluster">
-        <div class="data-status"><span class="live-dot"></span><span id="dataStatus">DEMO DATA</span></div>
-        <div class="clock" id="clock">--:--</div>
-      </div>
+      <div><div class="eyebrow" id="networkName">THE CAVE SPORTS NETWORK</div><div class="date" id="date">LOADING DATE</div></div>
+      <div class="status-cluster"><div class="data-status"><span class="live-dot"></span><span id="dataStatus">DEMO DATA</span></div><div class="clock" id="clock">--:--</div></div>
     </header>
+
+    <section class="now-bar">
+      <div><span class="now-label">NOW ENGINE</span><strong id="modeName">COMMAND MODE</strong></div>
+      <div class="now-reason" id="modeReason">Ranking the most important event on the board</div>
+      <div class="version-badge">V3.2</div>
+    </section>
 
     <nav class="sport-strip" id="sportStrip" aria-label="Sports included"></nav>
 
     <section class="hero" id="hero">
-      <div class="hero-scan"></div>
+      <div class="hero-scan"></div><div class="radar-sweep"></div><div class="timing-rail" aria-hidden="true"></div>
       <div class="hero-content">
-        <div class="hero-kicker"><span class="league-pill" id="heroLeague">NFL</span><span id="heroStatus">FEATURED</span></div>
+        <div class="hero-kicker"><span class="league-pill" id="heroLeague">NFL</span><span id="heroStatus">FEATURED</span><span class="priority-score" id="priorityScore">PRIORITY 000</span></div>
         <div class="hero-title" id="heroTitle">SPORTS COMMAND CENTER</div>
         <div class="matchup">
-          <div class="team">
-            <div class="team-mark" id="awayMark">DAL</div>
-            <div><div class="team-name" id="awayName">COWBOYS</div><div class="team-record" id="awayRecord">0–0</div></div>
-          </div>
-          <div class="score-center">
-            <div class="countdown-label" id="gameMeta">KICKOFF IN</div>
-            <div class="score" id="score">02:18:44</div>
-            <div class="venue" id="venue">ARLINGTON, TEXAS</div>
-          </div>
-          <div class="team team-right">
-            <div><div class="team-name" id="homeName">EAGLES</div><div class="team-record" id="homeRecord">0–0</div></div>
-            <div class="team-mark" id="homeMark">PHI</div>
-          </div>
+          <div class="team"><div class="team-mark" id="awayMark">DET</div><div><div class="team-name" id="awayName">LIONS</div><div class="team-record" id="awayRecord">0–0</div></div></div>
+          <div class="score-center"><div class="countdown-label" id="gameMeta">KICKOFF IN</div><div class="score" id="score">02:18:44</div><div class="venue" id="venue">GREEN BAY</div></div>
+          <div class="team team-right"><div><div class="team-name" id="homeName">PACKERS</div><div class="team-record" id="homeRecord">0–0</div></div><div class="team-mark" id="homeMark">GB</div></div>
         </div>
+        <div class="intel-row" id="intelRow"></div>
       </div>
       <div class="hero-progress"><span id="heroProgress"></span></div>
     </section>
 
-    <section class="ticker ticker-breaking"><div class="ticker-label">BREAKING</div><div class="ticker-window"><div class="ticker-track" id="breakingTicker"></div></div></section>
+    <section class="ticker-stack" id="tickerStack" aria-label="Universal sports updates"></section>
 
     <section class="section-block">
-      <div class="section-heading"><span>SCOREBOARD</span><span class="muted">NFL · NBA · MLB</span></div>
+      <div class="section-heading"><span>UNIVERSAL SCORE WALL</span><span class="muted">NFL · NBA · MLB · NHL · NCAA</span></div>
       <div class="league-grid" id="leagueGrid"></div>
+    </section>
+
+    <section class="section-block michigan-block">
+      <div class="section-heading"><span>MICHIGAN FOOTBALL</span><span class="muted">DEDICATED TEAM MODULE</span></div>
+      <div id="michiganModule"></div>
     </section>
 
     <section class="section-block">
@@ -62,16 +59,13 @@
     </section>
 
     <section class="section-block">
-      <div class="section-heading"><span>TOP STORIES</span><span class="muted" id="storyCounter">01 / 05</span></div>
-      <article class="story-card"><div class="story-league" id="storyLeague">MLB</div><div><h2 id="storyHeadline"></h2><p id="storySummary"></p></div></article>
+      <div class="section-heading"><span>TOP STORIES</span><span class="muted" id="storyCounter">01 / 07</span></div>
+      <article class="story-card"><div class="story-league" id="storyLeague">NFL</div><div><h2 id="storyHeadline"></h2><p id="storySummary"></p></div></article>
     </section>
 
     <section class="ticker ticker-upcoming"><div class="ticker-label">NEXT UP</div><div class="ticker-window"><div class="ticker-track reverse" id="upcomingTicker"></div></div></section>
-
-    <footer class="footer"><span>LAST UPDATE <strong id="lastUpdate">--</strong></span><span id="displayMode">PORTRAIT COMMAND MODE</span></footer>
+    <footer class="footer"><span>LAST UPDATE <strong id="lastUpdate">--</strong></span><span id="displayMode">UNIVERSAL AUTO PRIORITY</span></footer>
   </main>
-  <script src="config.js"></script>
-  <script src="mock-data.js"></script>
-  <script src="app.js"></script>
+  <script src="config.js"></script><script src="mock-data.js"></script><script src="app.js"></script>
 </body>
 </html>

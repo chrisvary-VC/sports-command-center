@@ -1,22 +1,56 @@
 window.DASHBOARD_CONFIG = {
+  version: "3.2",
   networkName: "THE CAVE SPORTS NETWORK",
-  accent: "#0076b6",
-  accentAlt: "#ffcb05",
+  accent: "#e10600",
+  accentAlt: "#f4f4f4",
   timeFormat: "12h",
-  heroRotationMs: 12000,
-  storyRotationMs: 9000,
-  tickerSpeedSeconds: 44,
-  enabledSports: ["NFL", "NCAAF", "NBA", "MLB", "F1", "INDYCAR"],
+  heroRotationMs: 10500,
+  storyRotationMs: 8200,
+  tickerSpeedSeconds: 38,
+  enabledSports: ["NFL", "NBA", "MLB", "NHL", "NCAAF", "F1", "INDYCAR"],
   favorites: {
     nfl: ["DET"],
-    ncaaf: ["MICH"],
     nba: [],
-    mlb: ["TEX"],
+    mlb: [],
+    nhl: [],
+    ncaaf: ["MICH"],
     f1Drivers: [],
     indycarDrivers: []
   },
-  collegeFootball: {
-    mode: "team-only",
-    teams: ["MICH"]
+  dedicatedModules: {
+    michiganFootball: {
+      enabled: true,
+      teamCode: "MICH",
+      title: "MICHIGAN FOOTBALL",
+      showSchedule: true,
+      showRecord: true,
+      showRanking: true,
+      showHeadlines: true
+    }
+  },
+  scoreWall: {
+    universalCoverage: true,
+    gamesPerLeague: 4,
+    tickerDirections: ["left", "right", "left", "right"]
+  },
+  priorityWeights: {
+    live: 100,
+    favorite: 35,
+    upcoming: 20,
+    breaking: 15,
+    final: 8
+  },
+  modes: {
+    auto: true,
+    redZone: true,
+    raceControl: true,
+    quietHoursStart: 23,
+    quietHoursEnd: 7
+  },
+  visualSystem: {
+    name: "Apex Broadcast",
+    clippedPanels: true,
+    telemetryLines: true,
+    highContrastNumbers: true
   }
 };

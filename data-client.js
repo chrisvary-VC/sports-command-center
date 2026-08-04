@@ -7,7 +7,10 @@
   const fallback = window.SPORTS_DATA;
 
   async function load() {
-    if (!live || !endpoint) return fallback;
+    if (!live || !endpoint || endpoint.includes('YOUR-WORKER')) {
+      window.VARYCAVE_DATA_SOURCE = 'DEMO';
+      return fallback;
+    }
 
     try {
       const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
@@ -21,7 +24,7 @@
       const response = await fetch(endpoint, { cache: 'no-store' });
       if (!response.ok) throw new Error(`Sports API ${response.status}`);
       const payload = await response.json();
-      if (!payload || !Array.isArray(payload.events)) throw new Error('Invalid sports payload');
+      if (!payload || !Array.isArray(payload.events) || payload.events.length === 0) throw new Error('Invalid or empty sports payload');
       window.SPORTS_DATA = payload;
       window.VARYCAVE_DATA_SOURCE = 'LIVE';
       localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), payload }));
@@ -33,5 +36,14 @@
     }
   }
 
-  window.SPORTS_DATA_READY = load();
+  window.SPORTS_DATA_READY = load().finally(() => {
+    const script = document.createElement('script');
+    script.src = 'app.js';
+    script.onload = () => {
+      const status = document.getElementById('dataStatus');
+      if (status) status.textContent = `${window.VARYCAVE_DATA_SOURCE || 'DEMO'} DATA · CT`;
+    };
+    script.onerror = () => document.getElementById('bootScreen')?.remove();
+    document.body.appendChild(script);
+  });
 })();

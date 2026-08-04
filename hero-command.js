@@ -20,7 +20,11 @@
     INDYCAR: "OPEN WHEEL AMERICA"
   };
   const leagueMark = league => assets.leagueLogos[league] ? `<img class="league-brand-image" src="${assets.leagueLogos[league]}" alt="${league}">` : league;
-  const teamMark = code => assets.logos?.[code] ? `<img src="${assets.logos[code]}" alt="${code}">` : `<span>${code}</span>`;
+  const teamMark = (event, side) => {
+    const code = event?.[side] || '';
+    const src = event?.[`${side}Logo`] || assets.logos?.[code];
+    return src ? `<img src="${src}" alt="${code}">` : `<span>${code}</span>`;
+  };
   const stateOf = event => /LIVE|TOP|BOT|Q[1-4]|HALF|LAP/i.test(event.status || "") ? "live" : /FINAL|FT/i.test(event.status || "") ? "final" : "upcoming";
   const featureLabels = {
     MLB: ["GAME OF THE DAY", "THE BIG ONE"],
@@ -54,25 +58,22 @@
       const state = stateOf(game);
       const result = game.score || game.detail || game.status || "—";
       const line = game.odds?.spread || game.odds || "—";
-      return `<div class="market-game ${state}"><div class="market-team"><i>${teamMark(game.away)}</i><strong>${game.away}</strong><span>at</span><strong>${game.home}</strong><i>${teamMark(game.home)}</i></div><div class="market-result">${result}</div><div class="market-line">${line}</div></div>`;
+      return `<div class="market-game ${state}"><div class="market-team"><i>${teamMark(game, 'away')}</i><strong>${game.away}</strong><span>at</span><strong>${game.home}</strong><i>${teamMark(game, 'home')}</i></div><div class="market-result">${result}</div><div class="market-line">${line}</div></div>`;
     }).join("")}</div>`;
   }
 
   function renderFeature(featured) {
     if (!featured) return;
     const data = window.SPORTS_DATA || {};
-    const page = (data.leaguePages || []).find(item => item.league === featured.league);
     const labels = featureLabels[featured.league] || ["GAME OF THE WEEK", "THE BIG ONE"];
     const label = document.getElementById("featuredGameLabel");
     const nickname = document.getElementById("featuredGameNickname");
     if (label) label.textContent = labels[0];
     if (nickname) nickname.textContent = labels[1];
-    const candidates = [...(page?.upcoming || []), ...(page?.marquee || [])]
-      .filter(game => !(game.away === featured.away && game.home === featured.home))
-      .slice(0, 3);
+    const candidates = (data.events || []).filter(game => game.league === featured.league && game.id !== featured.id).slice(0, 3);
     const watchlist = document.getElementById("heroWatchlist");
     if (!watchlist) return;
-    watchlist.innerHTML = `<div class="watchlist-title"><strong>THREE TO KEEP THE REMOTE FOR</strong><span>TOP GAMES TO WATCH</span></div><div class="watchlist-games">${candidates.map((game, index) => `<article class="watch-game"><b>0${index + 1}</b><div class="watch-match"><i>${teamMark(game.away)}</i><strong>${game.away}</strong><span>vs</span><strong>${game.home}</strong><i>${teamMark(game.home)}</i></div><small>${game.detail || game.odds || "UPCOMING"}</small></article>`).join("")}</div>`;
+    watchlist.innerHTML = `<div class="watchlist-title"><strong>THREE TO KEEP THE REMOTE FOR</strong><span>TOP GAMES TO WATCH</span></div><div class="watchlist-games">${candidates.map((game, index) => `<article class="watch-game"><b>0${index + 1}</b><div class="watch-match"><i>${teamMark(game, 'away')}</i><strong>${game.away}</strong><span>vs</span><strong>${game.home}</strong><i>${teamMark(game, 'home')}</i></div><small>${game.detail || game.status || ""}</small></article>`).join("")}</div>`;
   }
 
   function syncHero() {
@@ -87,6 +88,12 @@
     if (title && leagueTitles[league]) title.textContent = leagueTitles[league];
     const hero = document.getElementById("hero");
     if (hero) hero.dataset.league = league;
+    const awayMark = document.getElementById('awayMark');
+    const homeMark = document.getElementById('homeMark');
+    if (awayMark) awayMark.innerHTML = teamMark(featured, 'away');
+    if (homeMark) homeMark.innerHTML = teamMark(featured, 'home');
+    document.querySelectorAll('.sport-chip').forEach(chip => chip.classList.toggle('active', chip.dataset.sport === league));
+    window.dispatchEvent(new CustomEvent('varycave:leaguechange', { detail: { league } }));
     if (branded.has(league)) {
       pill.classList.add("logo-only");
       if (!pill.querySelector("img")) pill.innerHTML = leagueMark(league);

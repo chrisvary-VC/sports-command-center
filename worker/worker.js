@@ -27,7 +27,7 @@ export default {
     if (url.pathname !== '/api/sports') return new Response('Not found', { status: 404 });
 
     const cache = caches.default;
-    const cacheKey = new Request(url.origin + '/api/sports?cache-version=6', { method: 'GET' });
+    const cacheKey = new Request(url.origin + '/api/sports?cache-version=7', { method: 'GET' });
     const cached = await cache.match(cacheKey);
     if (cached) return withCors(cached);
 
@@ -77,7 +77,33 @@ async function loadFeed(feed) {
     const cdnPayload = await response.json();
     payload = cdnPayload.content?.sbData || cdnPayload;
   }
-  return (payload.events || []).map(event => normalizeEvent(event, feed.league)).filter(Boolean);
+  let events = payload.events || [];
+  if (events.length < 6) {
+    const scheduleEvents = await loadForwardSchedule(feed, events[0]).catch(() => []);
+    const seen = new Set(events.map(event => event.id || event.uid));
+    events = [...events, ...scheduleEvents.filter(event => !seen.has(event.id || event.uid))];
+  }
+  return events.map(event => normalizeEvent(event, feed.league)).filter(Boolean);
+}
+
+async function loadForwardSchedule(feed, firstEvent) {
+  const eventDate = new Date(firstEvent?.date || Date.now());
+  let scheduleUrl;
+  if (feed.league === 'NFL') {
+    scheduleUrl = `https://cdn.espn.com/core/nfl/schedule?xhr=1&year=${eventDate.getUTCFullYear()}&seasontype=1&week=2`;
+  } else {
+    eventDate.setUTCDate(eventDate.getUTCDate() + 7);
+    const date = eventDate.toISOString().slice(0, 10).replaceAll('-', '');
+    scheduleUrl = `https://cdn.espn.com/core/${feed.cdn}/schedule?xhr=1&date=${date}`;
+  }
+  const response = await fetch(scheduleUrl, {
+    headers: { 'accept': 'application/json, text/plain, */*' },
+    cf: { cacheTtl: CACHE_TTL_SECONDS, cacheEverything: true }
+  });
+  if (!response.ok) return [];
+  const payload = await response.json();
+  const schedule = payload.content?.schedule || {};
+  return Object.values(schedule).flatMap(day => day.games || []);
 }
 
 function normalizeEvent(event, league) {

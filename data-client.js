@@ -26,6 +26,8 @@
   function normalize(payload) {
     const events = Array.isArray(payload.events) ? payload.events : [];
     if (!events.length) throw new Error('The live sports feed returned no events');
+    const availableLeagues = new Set(events.map(event => event.league));
+    config.enabledSports = (config.enabledSports || []).filter(league => availableLeagues.has(league));
     const michiganGames = events.filter(event => event.league === 'NCAAF' && [event.away, event.home].includes('MICH'));
     const nextMichigan = michiganGames.find(event => stateOf(event) !== 'final') || michiganGames[0];
     return {

@@ -1,0 +1,24 @@
+/* v4.1.2 portrait-safe recovery overrides */
+img{max-width:100%;height:auto}
+.matchup-lockup,.mini-logo,.rank-logo,.team-mark,.tile-mark,.michigan-logo{overflow:hidden;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.matchup-lockup img{width:54px!important;height:54px!important;max-width:54px!important;max-height:54px!important;object-fit:contain!important;display:block!important}
+.mini-logo{width:42px!important;height:42px!important;max-width:42px!important;max-height:42px!important}
+.mini-logo img{width:38px!important;height:38px!important;max-width:38px!important;max-height:38px!important;object-fit:contain!important;display:block!important}
+.rank-logo{width:38px!important;height:38px!important;max-width:38px!important;max-height:38px!important}
+.rank-logo img{width:34px!important;height:34px!important;max-width:34px!important;max-height:34px!important;object-fit:contain!important;display:block!important}
+.team-mark img{width:58px!important;height:58px!important;max-width:58px!important;max-height:58px!important;object-fit:contain!important;display:block!important}
+.tile-mark img{width:34px!important;height:34px!important;max-width:34px!important;max-height:34px!important;object-fit:contain!important;display:block!important}
+.michigan-logo img{width:64px!important;height:64px!important;max-width:64px!important;max-height:64px!important;object-fit:contain!important;display:block!important}
+.league-page,.league-page-hero,.desk-grid,.top25-layout,.desk-panel,.top25-card,.league-lead,.league-news{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+.desk-row,.rank-row,.marquee-game{min-width:0!important;overflow:hidden!important}
+.desk-row>div,.rank-row>div,.marquee-game>div{min-width:0!important}
+.desk-teams,.desk-detail,.desk-odds,.rank-team,.rank-record,.marquee-game strong,.marquee-game span{overflow-wrap:anywhere!important;word-break:normal!important}
+@media (max-width:1100px){
+  .league-page-hero{grid-template-columns:1fr!important}
+  .desk-grid{grid-template-columns:1fr!important}
+  .top25-layout{grid-template-columns:1fr!important}
+  .league-page{min-height:0!important}
+  .desk-panel{min-height:0!important}
+  .league-lead{grid-template-columns:1fr!important;gap:14px!important}
+  .lead-score{text-align:left!important;font-size:34px!important}
+}

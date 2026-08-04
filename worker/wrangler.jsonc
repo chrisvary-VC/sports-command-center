@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "varycave-sports-gateway",
+  "main": "worker.js",
+  "compatibility_date": "2026-08-04",
+  "workers_dev": true,
+  "vars": {
+    "CACHE_TTL_SECONDS": "60"
+  }
+}

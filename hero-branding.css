@@ -1,0 +1,82 @@
+/* v5.3: editorial show branding integrated with league photography */
+.hero-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg,rgba(1,8,15,.96) 0,rgba(1,8,15,.68) 43%,rgba(1,8,15,.22) 78%),
+    linear-gradient(0deg,rgba(1,8,15,.88),transparent 58%);
+  pointer-events: none;
+}
+
+.hero-kicker {
+  position: relative;
+  min-height: 78px;
+  padding-left: 142px;
+}
+
+.hero-kicker .league-pill.logo-only {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 122px;
+  height: 72px;
+  padding: 10px 14px;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.98),rgba(218,225,233,.9))!important;
+  border-left: 5px solid var(--maize);
+  border-bottom: 3px solid rgba(255,203,5,.9);
+  box-shadow: 0 14px 32px rgba(0,0,0,.38);
+  clip-path: polygon(0 0,100% 0,100% 78%,86% 100%,0 100%);
+}
+
+.hero-kicker .league-pill.logo-only::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(0,39,76,.14);
+  clip-path: inherit;
+}
+
+.hero-kicker .league-pill.logo-only .league-brand-image {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 48px;
+  max-width: 92px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 4px rgba(0,0,0,.18));
+}
+
+.hero-kicker #heroStatus {
+  align-self: center;
+  padding: 8px 12px;
+  background: rgba(2,10,18,.76);
+  border-left: 2px solid var(--maize);
+  color: #dce4ec;
+}
+
+.hero-title {
+  max-width: 900px!important;
+  text-shadow: 0 6px 28px rgba(0,0,0,.8);
+}
+
+.hero[data-league="NFL"] .hero-title { color: #fff; }
+.hero[data-league="NBA"] .hero-title { color: #ffcb05; }
+.hero[data-league="MLB"] .hero-title { color: #fff; }
+.hero[data-league="NHL"] .hero-title { color: #dfe9f3; }
+.hero[data-league="NCAAF"] .hero-title { color: #ffcb05; }
+.hero[data-league="F1"] .hero-title { color: #fff; font-style: italic; }
+.hero[data-league="INDYCAR"] .hero-title { color: #fff; font-style: italic; }
+
+.hero[data-league="NBA"] .hero-kicker .league-pill.logo-only,
+.hero[data-league="F1"] .hero-kicker .league-pill.logo-only {
+  background: linear-gradient(145deg,#fff,#f2f2f2)!important;
+}
+
+@media (max-width: 700px) {
+  .hero-kicker { min-height: 62px; padding-left: 108px; }
+  .hero-kicker .league-pill.logo-only { width: 94px; height: 58px; padding: 8px 10px; }
+  .hero-kicker .league-pill.logo-only .league-brand-image { height: 38px; max-width: 72px; }
+  .hero-kicker #heroStatus { padding: 6px 8px; font-size: 10px; }
+}

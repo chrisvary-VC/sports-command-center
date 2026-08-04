@@ -12,6 +12,18 @@ The dashboard ships in `mock` mode and remains fully usable on GitHub Pages. The
 4. Set `DASHBOARD_CONFIG.data.endpoint` to the Worker `/api/sports` URL.
 5. Change `DASHBOARD_CONFIG.data.mode` from `mock` to `live`.
 
+## Cloudflare account setup
+
+1. Create or sign in to a Cloudflare account and open **Workers & Pages**.
+2. From the `worker` directory, run `npx wrangler login` and approve the browser authorization.
+3. Run `npx wrangler deploy`. The included `wrangler.jsonc` publishes `worker.js` as `varycave-sports-gateway`.
+4. Confirm that `https://varycave-sports-gateway.<your-subdomain>.workers.dev/health` returns an `ok` response.
+5. In the Worker dashboard, open **Settings → Variables and Secrets**. Add every provider API key as a **Secret**, never as plain text in this project.
+6. Add provider adapters to `worker.js` and normalize their responses to the payload contract below.
+7. Put the deployed `/api/sports` URL into `config.js`, change data mode to `live`, and test the health endpoint and dashboard fallback.
+
+Cloudflare is the secure gateway, cache, and CORS layer. A separate sports-data provider is still required for scores, schedules, and odds. Keep `.dev.vars` or `.env` files local; this repository ignores both.
+
 ## Normalized payload contract
 
 ```json

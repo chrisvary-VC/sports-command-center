@@ -1,0 +1,95 @@
+/* v5.4: editorial featured game plus three-game watchlist */
+.hero-feature {
+  justify-content: flex-start!important;
+  gap: 12px;
+  padding: 0!important;
+  border-left: 0!important;
+  background: linear-gradient(160deg,rgba(3,12,21,.97),rgba(2,8,15,.88))!important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.11);
+}
+
+.featured-game-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 62px;
+  padding: 11px 16px 10px 20px;
+  background: linear-gradient(90deg,#ffcb05,#eeb700);
+  color: #001a33;
+  border-left: 7px solid #fff;
+  clip-path: polygon(0 0,100% 0,100% 78%,96% 100%,0 100%);
+}
+
+.featured-game-head span,
+.featured-game-head strong { display: block; font-family: "Archivo Narrow",sans-serif; }
+.featured-game-head span { font-size: 10px; font-weight: 700; letter-spacing: .18em; }
+.featured-game-head strong { margin-top: 3px; font-size: 26px; line-height: .9; letter-spacing: .02em; }
+.featured-game-head em { font: 700 10px "Archivo Narrow",sans-serif; font-style: normal; letter-spacing: .16em; }
+
+.hero-feature .matchup {
+  grid-template-columns: minmax(0,1fr) 112px minmax(0,1fr)!important;
+  gap: 8px!important;
+  align-items: center;
+  min-height: 144px;
+  margin: 0!important;
+  padding: 8px 18px 4px;
+}
+
+.hero-feature .team,
+.hero-feature .team-right {
+  flex-direction: column;
+  justify-content: center!important;
+  gap: 7px!important;
+  text-align: center!important;
+}
+
+.hero-feature .team-mark {
+  width: 84px!important;
+  height: 84px!important;
+  padding: 8px;
+  background: radial-gradient(circle,rgba(255,255,255,.12),rgba(255,255,255,.025))!important;
+  border: 1px solid rgba(255,255,255,.09)!important;
+  clip-path: none!important;
+}
+
+.hero-feature .team-mark img { width: 68px!important; height: 68px!important; object-fit: contain; }
+.hero-feature .team-name { max-width: 150px!important; font-size: 19px!important; line-height: 1!important; white-space: normal!important; text-overflow: clip!important; }
+.hero-feature .score-center { min-width: 0; }
+.hero-feature .countdown-label { color: var(--maize); font-weight: 700; letter-spacing: .14em; }
+.hero-feature .score { margin: 6px 0!important; font-size: clamp(27px,2.35vw,38px)!important; line-height: .92!important; overflow-wrap: anywhere; }
+.hero-feature .venue { font-size: 8px!important; line-height: 1.35; }
+
+.hero-feature .odds-panel {
+  grid-template-columns: repeat(3,1fr)!important;
+  gap: 1px!important;
+  margin: 0 14px!important;
+  background: rgba(255,255,255,.1);
+}
+.hero-feature .odd { min-height: 48px; padding: 8px 10px!important; border-top: 2px solid rgba(255,203,5,.7)!important; background: #07111b!important; }
+.hero-feature .odd span { font-size: 8px!important; }
+.hero-feature .odd b { font-size: 14px!important; line-height: 1.05; }
+
+.hero-watchlist { margin-top: auto; padding: 2px 14px 14px; }
+.watchlist-title { display: flex; justify-content: space-between; align-items: end; padding: 7px 2px 8px; border-bottom: 1px solid rgba(255,203,5,.45); }
+.watchlist-title strong { font: 700 14px "Archivo Narrow",sans-serif; color: #fff; letter-spacing: .04em; }
+.watchlist-title span { font: 700 8px "Archivo Narrow",sans-serif; color: var(--maize); letter-spacing: .13em; }
+.watchlist-games { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-top: 7px; }
+.watch-game { position: relative; min-width: 0; padding: 8px; background: rgba(255,255,255,.045); border-bottom: 2px solid rgba(255,203,5,.55); }
+.watch-game>b { position: absolute; top: 5px; right: 6px; font: 700 9px "Archivo Narrow"; color: rgba(255,203,5,.55); }
+.watch-match { display: grid; grid-template-columns: 24px auto 12px auto 24px; gap: 3px; align-items: center; font: 700 12px "Archivo Narrow",sans-serif; }
+.watch-match i { width: 22px; height: 22px; display: grid; place-items: center; font-size: 8px; font-style: normal; }
+.watch-match img { max-width: 22px; max-height: 22px; object-fit: contain; }
+.watch-match span { color: #6f7d8c; font-size: 7px; text-transform: uppercase; }
+.watch-game small { display: block; margin-top: 6px; color: #9ca8b5; font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.sport-chip[data-sport="NCAAF"] .league-brand-image,
+.league-pill[data-league="NCAAF"] .league-brand-image,
+.market-brand .league-brand-image[alt="NCAAF"] { object-fit: contain; }
+
+@media(max-width:700px){
+  .hero-feature .matchup { grid-template-columns: 1fr 92px 1fr!important; min-height: 128px; padding: 8px; }
+  .hero-feature .team-mark { width: 64px!important; height: 64px!important; }
+  .hero-feature .team-mark img { width: 52px!important; height: 52px!important; }
+  .hero-feature .team-name { font-size: 15px!important; }
+  .watchlist-games { grid-template-columns: 1fr; }
+}

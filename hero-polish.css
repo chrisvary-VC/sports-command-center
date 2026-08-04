@@ -1,0 +1,105 @@
+/* v5.2: whole-league identity and featured-game legibility */
+.sport-chip.logo-only {
+  min-width: 96px;
+  padding: 8px 12px;
+  background: #101318;
+}
+
+.sport-chip.logo-only .league-brand-image,
+.sport-chip.active.logo-only .league-brand-image {
+  width: 100%;
+  height: 30px;
+  max-width: 92px;
+  object-fit: contain;
+  filter: none;
+}
+
+.sport-chip.active.logo-only {
+  background: linear-gradient(180deg, #ffcb05, #efb900);
+}
+
+.sport-chip.active.logo-only[data-sport="NFL"] .league-brand-image,
+.sport-chip.active.logo-only[data-sport="NBA"] .league-brand-image,
+.sport-chip.active.logo-only[data-sport="MLB"] .league-brand-image,
+.sport-chip.active.logo-only[data-sport="NHL"] .league-brand-image,
+.sport-chip.active.logo-only[data-sport="NCAAF"] .league-brand-image {
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,.2));
+}
+
+.league-pill.logo-only {
+  min-width: 84px;
+  background: rgba(255,255,255,.96)!important;
+}
+
+.league-pill.logo-only .league-brand-image {
+  width: 100%;
+  height: 29px;
+  max-width: 68px;
+  object-fit: contain;
+  filter: none;
+}
+
+.hero-command-stage {
+  grid-template-columns: minmax(390px,.78fr) minmax(560px,1.22fr);
+}
+
+.hero-feature {
+  padding: 18px;
+}
+
+.hero-feature .matchup {
+  grid-template-columns: minmax(0,1fr) minmax(142px,.72fr) minmax(0,1fr);
+  gap: 12px;
+}
+
+.hero-feature .team,
+.hero-feature .team-right {
+  min-width: 0;
+  gap: 8px;
+}
+
+.hero-feature .team-name {
+  max-width: 120px;
+  overflow: hidden;
+  font-size: clamp(17px,1.55vw,24px)!important;
+  line-height: 1!important;
+  letter-spacing: -.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hero-feature .score-center {
+  min-width: 0;
+}
+
+.hero-feature .score {
+  font-size: clamp(27px,2.7vw,44px)!important;
+  line-height: .94!important;
+  overflow-wrap: anywhere;
+}
+
+.hero-feature .countdown-label,
+.hero-feature .venue {
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+.hero-feature .odd b {
+  font-size: clamp(14px,1.25vw,18px);
+}
+
+.market-brand .league-brand-image {
+  filter: none;
+}
+
+@media (max-width: 1150px) {
+  .hero-command-stage { grid-template-columns: 1fr; }
+  .hero-feature .team-name { max-width: none; }
+}
+
+@media (max-width: 700px) {
+  .sport-chip.logo-only { min-width: 82px; }
+  .sport-chip.logo-only .league-brand-image { max-width: 70px; height: 26px; }
+  .hero-feature .matchup { grid-template-columns: 1fr; }
+  .hero-feature .team-name { max-width: none; font-size: 20px!important; }
+}

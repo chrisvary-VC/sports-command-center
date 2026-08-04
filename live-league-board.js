@@ -29,7 +29,7 @@
   }
 
   const state = event => /FINAL|FT/i.test(event.status || '') ? 'final' : /LIVE|TOP|BOT|Q[1-4]|HALF|LAP/i.test(event.status || '') ? 'live' : 'scheduled';
-  const leagueFromCounter = () => (counter.textContent || '').split(' · ')[0];
+  const currentLeague = () => document.getElementById('heroLeague')?.dataset.league || (counter.textContent || '').split(' · ')[0];
   const teamLogo = (event, side) => {
     const code = event[side];
     const src = event[`${side}Logo`] || assets.logos?.[code];
@@ -68,26 +68,31 @@
     </article>`;
   }
 
-  function render() {
-    if (page.querySelector('.league-board-v3')) return;
-    const league = leagueFromCounter();
+  function render(force = false) {
+    const league = currentLeague();
+    document.querySelectorAll('.sport-chip').forEach(chip => chip.classList.toggle('active', chip.dataset.sport === league));
+    if (!force && page.querySelector('.league-board-v3') && page.dataset.boardLeague === league) return;
     const games = (data.events || []).filter(event => event.league === league).sort((a, b) => new Date(a.start) - new Date(b.start));
     if (!games.length) return;
-    const tracked = [...games].sort((a, b) => {
+    const ranked = [...games].sort((a, b) => {
       const weight = event => state(event) === 'live' ? 0 : state(event) === 'scheduled' ? 1 : 2;
       return weight(a) - weight(b) || new Date(a.start) - new Date(b.start);
-    }).slice(0, 6);
+    });
+    const tracked = ranked.slice(0, 6);
+    const visibleSlate = ranked.slice(0, 6).sort((a, b) => new Date(a.start) - new Date(b.start));
     page.innerHTML = `<section class="league-board-v3">
       <header class="board-v3-header"><div class="board-v3-logo">${leagueLogo(league)}</div><div><span>${league} COMMAND BOARD</span><h2>LEAGUE-WIDE GAME TRACKER</h2></div><em>${games.length} GAMES · LIVE FEED</em></header>
       <div class="board-v3-grid">
-        <section class="full-slate-panel"><div class="panel-v3-title"><strong>FULL LEAGUE SLATE</strong><span>CHRONOLOGICAL · CENTRAL TIME</span></div><div class="slate-list">${games.map(slateRow).join('')}</div></section>
+        <section class="full-slate-panel"><div class="panel-v3-title"><strong>TOP GAMES THIS WEEK</strong><span>CHRONOLOGICAL · CENTRAL TIME</span></div><div class="slate-list">${visibleSlate.map(slateRow).join('')}</div></section>
         <aside class="tracked-panel"><div class="panel-v3-title"><strong>TOP SIX TO TRACK</strong><span>LIVE FIRST · NEXT UP</span></div><div class="tracked-list">${tracked.map(trackedCard).join('')}</div></aside>
       </div>
     </section>`;
+    page.dataset.boardLeague = league;
     counter.textContent = `${league} · FULL SLATE + TOP SIX TO TRACK`;
   }
 
   new MutationObserver(() => requestAnimationFrame(render)).observe(page, { childList: true });
+  window.addEventListener('varycave:leaguechange', () => render(true));
   restoreScoreTickers();
   render();
 })();

@@ -1,49 +1,84 @@
 (() => {
   const config = window.DASHBOARD_CONFIG || {};
-  const live = config.data?.mode === 'live';
   const endpoint = config.data?.endpoint;
-  const cacheKey = 'varycave-live-data-v4';
-  const maxAge = config.data?.cacheMaxAgeMs || 120000;
-  const fallback = window.SPORTS_DATA;
+  const refreshMs = config.data?.refreshMs || 60000;
+  const stateOf = event => /FINAL|FT/i.test(event.status || '') ? 'final' : /LIVE|TOP|BOT|Q[1-4]|HALF|LAP/i.test(event.status || '') ? 'live' : 'upcoming';
+  const lineFor = event => [event.odds?.spread, event.odds?.moneyline, event.odds?.total].filter(Boolean).join(' · ');
 
-  async function load() {
-    if (!live || !endpoint || endpoint.includes('YOUR-WORKER')) {
-      window.VARYCAVE_DATA_SOURCE = 'DEMO';
-      return fallback;
-    }
-
-    try {
-      const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
-      if (cached && Date.now() - cached.savedAt < maxAge) {
-        window.SPORTS_DATA = cached.payload;
-        window.VARYCAVE_DATA_SOURCE = 'CACHE';
-      }
-    } catch (_) {}
-
-    try {
-      const response = await fetch(endpoint, { cache: 'no-store' });
-      if (!response.ok) throw new Error(`Sports API ${response.status}`);
-      const payload = await response.json();
-      if (!payload || !Array.isArray(payload.events) || payload.events.length === 0) throw new Error('Invalid or empty sports payload');
-      window.SPORTS_DATA = payload;
-      window.VARYCAVE_DATA_SOURCE = 'LIVE';
-      localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), payload }));
-      return payload;
-    } catch (error) {
-      console.warn('[VaryCave] Live data unavailable, using fallback.', error);
-      window.VARYCAVE_DATA_SOURCE ||= 'DEMO';
-      return window.SPORTS_DATA || fallback;
-    }
+  function buildLeaguePages(events) {
+    return [...new Set(events.map(event => event.league))].map(league => {
+      const games = events.filter(event => event.league === league);
+      const lead = games.find(event => stateOf(event) === 'live') || games.find(event => stateOf(event) === 'upcoming') || games[0];
+      const results = games.filter(event => stateOf(event) === 'final').slice(0, 3).map(event => ({ away: event.away, home: event.home, score: event.score || event.detail, detail: event.status }));
+      const upcoming = games.filter(event => stateOf(event) !== 'final').slice(0, 3).map(event => ({ away: event.away, home: event.home, detail: event.detail || event.status, odds: lineFor(event) }));
+      return {
+        league,
+        headline: `${league} LIVE LEAGUE BOARD`,
+        summary: `${games.length} games currently supplied by the live scoreboard feed.`,
+        lead: { away: lead.away, home: lead.home, label: lead.status, time: lead.score || lead.detail || lead.status, odds: lineFor(lead) },
+        results,
+        upcoming,
+        marquee: upcoming.map(game => ({ away: game.away, home: game.home, detail: game.detail }))
+      };
+    });
   }
 
-  window.SPORTS_DATA_READY = load().finally(() => {
-    const script = document.createElement('script');
-    script.src = 'app.js';
-    script.onload = () => {
-      const status = document.getElementById('dataStatus');
-      if (status) status.textContent = `${window.VARYCAVE_DATA_SOURCE || 'DEMO'} DATA · CT`;
+  function normalize(payload) {
+    const events = Array.isArray(payload.events) ? payload.events : [];
+    if (!events.length) throw new Error('The live sports feed returned no events');
+    const michiganGames = events.filter(event => event.league === 'NCAAF' && [event.away, event.home].includes('MICH'));
+    const nextMichigan = michiganGames.find(event => stateOf(event) !== 'final') || michiganGames[0];
+    return {
+      ...payload,
+      events,
+      tickerLanes: payload.tickerLanes || [...new Set(events.map(event => event.league))].map((league, index) => ({ league, direction: index % 2 ? 'right' : 'left' })),
+      leaguePages: buildLeaguePages(events),
+      stories: [],
+      top25: [],
+      top25Games: [],
+      michigan: {
+        team: 'MICHIGAN WOLVERINES', record: 'LIVE FEED', ranking: 'RANKING NOT PROVIDED', conference: 'BIG TEN',
+        nextGame: { opponent: nextMichigan ? (nextMichigan.away === 'MICH' ? nextMichigan.homeName : nextMichigan.awayName) : 'SCHEDULE UNAVAILABLE', start: nextMichigan?.start || new Date().toISOString(), network: nextMichigan?.network || '', venue: nextMichigan?.venue || '' },
+        schedule: michiganGames.filter(event => stateOf(event) !== 'final').slice(0, 3).map(event => ({ opponent: event.away === 'MICH' ? event.homeName : event.awayName, start: event.start, site: event.home === 'MICH' ? 'HOME' : 'AWAY' })),
+        notes: ['Schedule information is supplied by the live scoreboard feed.']
+      }
     };
-    script.onerror = () => document.getElementById('bootScreen')?.remove();
-    document.body.appendChild(script);
+  }
+
+  function setStatus(label) {
+    const status = document.getElementById('dataStatus');
+    if (status) status.textContent = `${label} · CT`;
+  }
+
+  async function load() {
+    if (config.data?.mode !== 'live' || !endpoint) throw new Error('Live sports endpoint is not configured');
+    const response = await fetch(`${endpoint}?display=${Date.now()}`, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`Sports gateway returned ${response.status}`);
+    window.SPORTS_DATA = normalize(await response.json());
+    window.VARYCAVE_DATA_SOURCE = 'LIVE';
+    return window.SPORTS_DATA;
+  }
+
+  window.SPORTS_DATA = {
+    events: [], tickerLanes: [], leaguePages: [], stories: [], top25: [], top25Games: [],
+    michigan: {
+      team: 'MICHIGAN WOLVERINES', record: 'FEED OFFLINE', ranking: '', conference: 'BIG TEN',
+      nextGame: { opponent: 'UNAVAILABLE', start: new Date().toISOString(), network: '', venue: '' },
+      schedule: [], notes: ['Live schedule temporarily unavailable.']
+    }
+  };
+  window.SPORTS_DATA_READY = load().then(data => {
+    setStatus('LIVE DATA');
+    if (!data.top25.length && document.querySelector('.top25-block')) document.querySelector('.top25-block').hidden = true;
+    if (!data.events.some(event => event.league === 'NCAAF' && [event.away, event.home].includes('MICH')) && document.querySelector('.michigan-block')) document.querySelector('.michigan-block').hidden = true;
+    document.querySelector('.story-card')?.closest('.section-block')?.remove();
+    setTimeout(() => window.location.reload(), refreshMs);
+    return data;
+  }).catch(error => {
+    console.error('[VaryCave] Live data unavailable.', error);
+    window.VARYCAVE_DATA_SOURCE = 'OFFLINE';
+    setStatus('LIVE FEED OFFLINE');
+    document.documentElement.classList.add('data-offline');
+    return window.SPORTS_DATA;
   });
 })();

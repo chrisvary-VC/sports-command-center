@@ -1,0 +1,73 @@
+/* v4.2 Command Desk: portrait-first hierarchy and absolute image containment */
+html,body{overflow-x:hidden}
+.dashboard{max-width:1080px;margin:0 auto}
+
+/* Every remotely loaded logo stays inside its assigned seat. */
+.team-mark,.tile-mark,.mini-logo,.rank-logo,.michigan-logo,.matchup-lockup{overflow:hidden;min-width:0;min-height:0}
+.team-mark img,.tile-mark img,.mini-logo img,.rank-logo img,.michigan-logo img,.matchup-lockup img,
+.desk-row img,.rank-row img,.score-tile img,.league-page img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;position:static!important;transform:none!important;margin:0!important}
+.mini-logo{width:38px!important;height:38px!important;flex:0 0 38px}
+.rank-logo{width:38px!important;height:38px!important}
+.matchup-lockup img{width:54px!important;height:54px!important;flex:0 0 54px}
+.desk-result img{width:34px!important;height:34px!important;object-fit:contain!important}
+
+/* The old hero becomes a compact Command Spotlight, not a full-screen billboard. */
+.hero{min-height:0!important;height:auto!important;padding:0!important;overflow:hidden}
+.hero-content{padding:24px 28px 20px!important;min-height:360px!important;display:flex!important;flex-direction:column!important;justify-content:flex-end!important}
+.hero-title{font-size:clamp(38px,5vw,58px)!important;max-width:72%;line-height:.92!important;margin-bottom:18px!important}
+.matchup{grid-template-columns:minmax(0,1fr) minmax(180px,.72fr) minmax(0,1fr)!important;gap:16px!important;align-items:center!important}
+.team-mark{width:64px!important;height:64px!important;flex:0 0 64px!important}
+.team-name{font-size:clamp(22px,3vw,34px)!important;white-space:normal!important}
+.score{font-size:clamp(44px,6vw,68px)!important}
+.odds-panel{grid-template-columns:repeat(3,minmax(0,1fr))!important;margin-top:14px!important}
+.intel-row{display:none!important}
+.hero-progress{height:4px!important}
+
+/* Ribbon is the handoff between Spotlight and the detailed desk. */
+.arena-ribbon{margin-top:8px!important}
+.ticker-stack{margin-top:8px!important}
+
+/* League Desk: one focused page with readable editorial zones. */
+.league-page{min-height:0!important}
+.league-page-hero{grid-template-columns:minmax(0,1.45fr) minmax(260px,.55fr)!important;gap:12px!important}
+.league-lead{min-height:150px!important;padding:18px 20px!important;grid-template-columns:minmax(0,1fr) auto!important}
+.league-lead h2{font-size:clamp(28px,4vw,42px)!important;overflow-wrap:normal!important;word-break:normal!important}
+.league-news{padding:18px 20px!important;min-width:0!important}
+.league-news h3{font-size:24px!important;overflow-wrap:break-word!important}
+
+/* Results and radar are supporting columns; This Week owns the width. */
+.desk-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:12px!important;align-items:start!important}
+.desk-panel{min-height:0!important;min-width:0!important;padding:16px!important;overflow:hidden!important}
+.desk-panel:nth-child(2){grid-column:1/-1;grid-row:1;padding:18px 20px!important}
+.desk-panel:nth-child(1){grid-column:1;grid-row:2}
+.desk-panel:nth-child(3){grid-column:2;grid-row:2}
+.desk-row{grid-template-columns:38px minmax(0,1fr) auto!important;gap:12px!important;padding:13px 0!important;min-width:0!important}
+.desk-row>div{min-width:0!important}
+.desk-teams{font-size:18px!important;line-height:1.05!important;white-space:normal!important;word-break:normal!important;overflow-wrap:break-word!important}
+.desk-detail,.desk-odds{white-space:normal!important;word-break:normal!important;overflow-wrap:break-word!important}
+.desk-result{min-width:50px!important;max-width:110px!important;white-space:nowrap!important}
+
+/* AP Top 25 stays dense and disciplined. */
+.top25-layout{grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr)!important}
+.rank-row{grid-template-columns:32px 38px minmax(0,1fr) auto!important}
+.rank-team,.marquee-game strong{word-break:normal!important;overflow-wrap:break-word!important}
+
+@media(max-width:1100px){
+  .dashboard{max-width:none}
+  .hero-content{min-height:330px!important;padding:22px 24px 18px!important}
+  .hero-title{max-width:85%!important}
+  .league-page-hero{grid-template-columns:1fr!important}
+  .league-news{min-height:0!important}
+  .top25-layout{grid-template-columns:1fr!important}
+}
+
+@media(max-width:760px){
+  .hero-content{min-height:300px!important;padding:18px!important}
+  .hero-title{max-width:100%!important;font-size:38px!important}
+  .matchup{grid-template-columns:1fr!important;text-align:center!important}
+  .team,.team-right{justify-content:center!important}
+  .odds-panel{grid-template-columns:1fr!important}
+  .desk-grid{grid-template-columns:1fr!important}
+  .desk-panel:nth-child(1),.desk-panel:nth-child(2),.desk-panel:nth-child(3){grid-column:1!important;grid-row:auto!important}
+  .desk-row{grid-template-columns:34px minmax(0,1fr) auto!important}
+}

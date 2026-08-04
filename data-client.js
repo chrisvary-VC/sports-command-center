@@ -74,7 +74,16 @@
     if (!data.top25.length && document.querySelector('.top25-block')) document.querySelector('.top25-block').hidden = true;
     if (!data.events.some(event => event.league === 'NCAAF' && [event.away, event.home].includes('MICH')) && document.querySelector('.michigan-block')) document.querySelector('.michigan-block').hidden = true;
     document.querySelector('.story-card')?.closest('.section-block')?.remove();
-    setTimeout(() => window.location.reload(), refreshMs);
+    setInterval(async () => {
+      try {
+        const refreshed = await load();
+        setStatus('LIVE DATA');
+        window.dispatchEvent(new CustomEvent('varycave:data', { detail: refreshed }));
+      } catch (error) {
+        console.warn('[VaryCave] Refresh failed; keeping the last live scoreboard.', error);
+        setStatus('STALE DATA');
+      }
+    }, refreshMs);
     return data;
   }).catch(error => {
     console.error('[VaryCave] Live data unavailable.', error);

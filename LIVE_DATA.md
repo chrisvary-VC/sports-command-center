@@ -1,30 +1,41 @@
-# VaryCave SportsCenter v4 Live Data
+# VaryCave SportsCenter v6 Live Data
 
-## Current behavior
+## What is live
 
-The dashboard ships in `mock` mode and remains fully usable on GitHub Pages. The new `data-client.js` resolves a data source before loading the dashboard, uses a short browser cache, and automatically falls back to bundled demo data when the gateway is unavailable.
+The Cloudflare Worker aggregates current scoreboards and schedules for NFL, NBA, MLB, NHL, college football, Formula 1 and IndyCar. It also pulls sports headlines through RSS and builds the normalized payload used by the dashboard.
 
-## Enable live mode
+The Worker caches responses for 45 seconds. The dashboard caches the latest successful payload in the browser and falls back to that payload if a provider is temporarily unavailable.
 
-1. Deploy `worker/worker.js` to Cloudflare Workers.
-2. Add provider secrets as Worker environment variables. Never put API keys in `config.js`.
-3. Add normalized provider adapters inside the Worker.
-4. Set `DASHBOARD_CONFIG.data.endpoint` to the Worker `/api/sports` URL.
-5. Change `DASHBOARD_CONFIG.data.mode` from `mock` to `live`.
+## Odds
 
-## Normalized payload contract
+Sportsbook data is optional and requires an API key from The Odds API. Without the key, scores, schedules and news remain live, while odds display as unavailable.
 
-```json
-{
-  "events": [],
-  "tickerLanes": [],
-  "michigan": {},
-  "stories": [],
-  "generatedAt": "2026-08-04T00:00:00Z",
-  "source": "provider-name"
-}
+From the `worker` directory:
+
+```bash
+npm install
+npx wrangler login
+npx wrangler secret put ODDS_API_KEY
+npm run deploy
 ```
 
-Every event should include `id`, `league`, `status`, `title`, `away`, `home`, `awayName`, `homeName`, `start`, `venue`, `network`, and optional `score`, `detail`, and `odds`.
+Copy the resulting `workers.dev` URL.
 
-All source timestamps must be ISO 8601. The display converts them to `America/Chicago` automatically.
+## Connect the dashboard
+
+After the branch is deployed to GitHub Pages, open:
+
+`https://chrisvary-vc.github.io/sports-command-center/live-setup.html`
+
+Paste the Worker URL and choose **Save & Test**. The URL is stored in that browser. Repeat this once on the Raspberry Pi and once on any iPad or Mac used for previewing.
+
+## Data source labels
+
+- `LIVE`: the newest Worker payload loaded successfully.
+- `CACHE`: a recent successful payload is displayed while a refresh runs.
+- `STALE`: the last successful payload is displayed because the Worker is unavailable.
+- `DEMO`: no Worker URL or usable cached payload is available.
+
+## Provider note
+
+The scoreboard and RSS adapters use public ESPN web feeds. These are practical for a personal display but are not a contracted commercial data license. A production product should replace them with licensed providers such as SportsDataIO or Sportradar. The Worker isolates provider-specific code so that replacement does not require redesigning the dashboard.

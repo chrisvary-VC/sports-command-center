@@ -1,0 +1,10 @@
+name = "varycave-sports-live"
+main = "index.js"
+compatibility_date = "2026-08-01"
+workers_dev = true
+
+[vars]
+ENVIRONMENT = "production"
+
+# Add the optional sportsbook credential with:
+# npx wrangler secret put ODDS_API_KEY

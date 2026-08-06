@@ -1,0 +1,58 @@
+/* v6.1 one-screen broadcast desk */
+@media (min-width:1051px){
+  html,body{height:100%;overflow:hidden}
+  .dashboard{height:100vh;max-width:1680px;padding:8px 14px 10px;display:grid;grid-template-rows:58px 44px minmax(310px,43vh) minmax(260px,1fr) 20px;gap:7px}
+  .masthead{min-height:0;height:58px;padding:0 3px 7px}
+  .brand img{width:46px;height:41px}.brand strong{font-size:32px}.brand small{margin-top:4px;font-size:8px}
+  .system-status{gap:18px}.system-status time{font-size:42px}.system-status small{font-size:7px}
+  .league-nav{height:44px;padding:0;gap:4px}.league-nav button{min-height:0;height:44px;padding:0 10px;font-size:13px}
+  .command-grid{display:grid;grid-template-columns:minmax(225px,.72fr) minmax(500px,1.65fr) minmax(285px,.88fr);gap:7px;margin:0;min-height:0}
+  .scoreboard-panel,.watch-panel,.feature-card{height:100%;min-height:0;overflow:hidden}
+  .scoreboard-panel,.watch-panel{border:1px solid var(--line);background:#07131f;padding:10px}
+  .scoreboard-panel>header,.watch-panel>header{display:flex;align-items:end;justify-content:space-between;height:35px;margin:0 0 3px}
+  .scoreboard-panel p,.watch-panel p{margin:0;color:var(--maize);font:700 8px "Archivo Narrow";letter-spacing:.14em}
+  .scoreboard-panel h2,.watch-panel h2{margin:2px 0 0;font:700 20px/1 "Archivo Narrow";text-transform:uppercase}
+  .scoreboard-panel header>span,.watch-panel header>span{color:var(--soft);font-size:7px;letter-spacing:.1em}
+  .score-grid{display:block}
+  .score-card{height:51px;padding:6px 7px;border:0;border-top:1px solid #203449;background:transparent}
+  .score-card.is-live{padding:5px 7px;border-top:2px solid var(--red)}
+  .score-card-top{height:10px}.score-card-top span,.score-card-top b{font-size:7px}
+  .score-card-match{height:20px;margin:2px 0;gap:4px}.score-team{gap:4px}.score-team i{width:18px;height:18px}.score-team strong{font-size:12px}.score-card-match>em{font-size:12px}
+  .score-card-meta strong,.score-card-meta span{font-size:7px}
+  .feature-card{min-height:0}.feature-content{height:100%;padding:14px 16px;display:flex;flex-direction:column}
+  .eyebrow{font-size:8px}.live-pill{padding:4px 6px}.feature-label{margin:13px 0 2px;font-size:8px}
+  .feature-content h1{font-size:clamp(31px,3vw,48px)}
+  .feature-matchup{margin:12px 0 6px;max-width:610px}.feature-matchup img{width:39px;height:39px}.feature-matchup>div{font-size:16px}.feature-matchup>b{font-size:clamp(25px,2.8vw,40px)}
+  .feature-context{margin:5px 0 9px;font-size:10px;line-height:1.35}
+  .feature-facts{margin-top:auto}.feature-facts span{padding:6px 8px}.feature-facts small{font-size:7px}.feature-facts strong{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .feature-odds{margin-top:5px}.feature-odds span{padding:5px 7px;font-size:8px}
+  .watch-panel{padding:10px}.watch-row{grid-template-columns:49px 1fr auto;gap:7px;min-height:49px}.watch-row time{font-size:14px}.watch-match strong{font-size:14px}.watch-match small,.watch-network span,.watch-row time small{font-size:7px}.watch-network b{font-size:7px}
+  .lower-grid{display:grid;grid-template-columns:minmax(230px,.72fr) minmax(500px,1.65fr) minmax(285px,.88fr);gap:7px;min-height:0}
+  .lower-grid>.section{min-height:0;height:100%;margin:0;padding:9px;overflow:hidden}
+  .lower-grid .section-head{height:35px;margin:0;padding:0 0 6px}.lower-grid .section-head p{font-size:7px}.lower-grid .section-head h2{font-size:19px}.lower-grid .section-head>span{font-size:7px}
+  .favorite-grid{display:block}.favorite-card{grid-template-columns:38px 1fr;gap:8px;height:70px;margin-top:5px;padding:7px;border-left-width:2px}.favorite-mark{height:34px}.favorite-mark img{max-width:34px;max-height:34px}.favorite-card h3{margin:2px 0;font-size:15px}.favorite-card b,.favorite-card p,.favorite-card span{font-size:7px}
+  .league-summary{grid-template-columns:1.4fr .8fr;gap:5px;margin-top:5px}.league-summary>div{padding:7px}.league-summary b{font-size:7px}.league-summary h3{margin:3px 0;font-size:15px}.league-summary p{font-size:8px;line-height:1.25}.stakes strong{margin-top:3px;font-size:14px}.stakes span{margin-top:3px;font-size:7px}
+  .board-columns{gap:5px;margin-top:5px}.board-columns>div{padding:5px 7px}.board-columns h3{font-size:11px;margin-bottom:2px}.board-row{grid-template-columns:21px 1fr auto;gap:5px;min-height:30px}.board-row>span{width:18px;height:18px}.board-row strong,.board-row em{font-size:10px}.board-row small{font-size:6px;margin-top:-9px}
+  .story-grid{display:block}.story-grid article{padding:8px;border-top-width:2px;margin-top:5px}.story-grid article:nth-child(n+3){display:none}.story-grid article>span,.story-grid small{font-size:6px}.story-grid h3{margin:3px 0;font-size:14px}.story-grid p{font-size:8px;line-height:1.25}.story-grid small{margin-top:4px}
+  footer{height:20px;padding:4px 2px 0;font-size:7px}
+}
+
+@media (max-width:1050px){
+  .command-grid>*{min-width:0;width:100%}
+  .scoreboard-panel{border:1px solid var(--line);background:#07131f;padding:14px}
+  .scoreboard-panel>header{display:flex;justify-content:space-between;align-items:end;margin-bottom:12px}
+  .scoreboard-panel p{margin:0;color:var(--maize);font:700 10px "Archivo Narrow";letter-spacing:.14em}
+  .scoreboard-panel h2{margin:3px 0 0;font:700 25px "Archivo Narrow";text-transform:uppercase}
+  .scoreboard-panel header>span{color:var(--soft);font-size:9px}
+  .lower-grid{display:block}
+}
+
+@media (min-width:1051px){
+  .dashboard{height:auto;grid-template-rows:58px 44px 300px 210px 20px;align-content:start}
+  .score-card{height:45px}.watch-row{min-height:43px}
+  .lower-grid>.section{height:210px}
+  .feature-label{margin-top:8px}.feature-matchup{margin-top:8px}.feature-context{margin-bottom:6px}
+  .favorite-card{height:61px}
+  .league-summary>div{padding:5px 7px}.league-summary h3{font-size:13px}.league-summary p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .story-grid article{padding:6px 8px}.story-grid h3{font-size:13px}.story-grid p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+}

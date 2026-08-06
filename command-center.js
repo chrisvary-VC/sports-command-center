@@ -118,11 +118,13 @@
   }
 
   function render() {
-    const all = sortedEvents();
-    const live = all.filter(isLive);
-    const scoreEvents = [...live, ...all.filter(event => !live.includes(event) && !isFinal(event))].slice(0, 5);
-    const featureEvent = live[0] || all.find(isFavorite) || all[0];
-    const watch = all.filter(event => event !== featureEvent && !isFinal(event)).slice(0, 5);
+    const filtered = sortedEvents();
+    const globalEvents = sortedEvents('ALL');
+    const live = globalEvents.filter(isLive);
+    const scoreEvents = [...live, ...globalEvents.filter(event => !live.includes(event) && !isFinal(event))].slice(0, 5);
+    const filteredLive = filtered.filter(isLive);
+    const featureEvent = filteredLive[0] || filtered.find(isFavorite) || filtered[0];
+    const watch = globalEvents.filter(event => event !== featureEvent && !isFinal(event)).slice(0, 5);
     const boardLeague = selectedLeague === 'ALL' ? featureEvent?.league || 'NFL' : selectedLeague;
     dashboard.innerHTML = `
       <header class="masthead">
@@ -130,11 +132,12 @@
         <div class="system-status"><div><span class="status-dot"></span><b>${esc(source)} DATA</b><small id="freshness">UPDATED NOW</small></div><time id="clock">--:--</time></div>
       </header>
       <nav class="league-nav" aria-label="Sports">${['ALL',...sports].map(sport => {const count=(data.events||[]).filter(e=>(sport==='ALL'||e.league===sport)&&isLive(e)).length;return `<button class="${selectedLeague===sport?'active':''}" data-league="${sport}"><span>${esc(leagueNames[sport]||sport)}</span>${count?`<b>${count} LIVE</b>`:'<small>VIEW</small>'}</button>`}).join('')}</nav>
-      <section class="now-strip"><header><div><p>${live.length ? 'LIVE NOW · STARTING SOON' : 'STARTING NEXT'}</p><h2>${live.length ? `${live.length} active event${live.length===1?'':'s'} · next best windows` : 'Your next viewing windows'}</h2></div><span>ALL TIMES ${zone}</span></header><div class="score-grid">${scoreEvents.map(scoreCard).join('') || '<p class="empty-state">No events are available for this league.</p>'}</div></section>
-      <section class="command-grid">${featured(featureEvent)}<aside class="watch-panel"><header><div><p>UP NEXT</p><h2>Worth watching</h2></div><span>${watch.length} EVENTS</span></header><div>${watch.map(watchRow).join('') || '<p class="empty-state">No additional events are scheduled.</p>'}</div></aside></section>
-      ${favoritesSection()}
-      ${leagueBoard(boardLeague)}
-      ${storiesSection()}
+      <section class="command-grid">
+        <aside class="scoreboard-panel"><header><div><p>${live.length ? 'LIVE · NEXT' : 'AROUND SPORTS'}</p><h2>Scoreboard</h2></div><span>ALL SPORTS</span></header><div class="score-grid">${scoreEvents.map(scoreCard).join('') || '<p class="empty-state">No events available.</p>'}</div></aside>
+        ${featured(featureEvent)}
+        <aside class="watch-panel"><header><div><p>UP NEXT</p><h2>Worth watching</h2></div><span>${watch.length} EVENTS</span></header><div>${watch.map(watchRow).join('') || '<p class="empty-state">No additional events are scheduled.</p>'}</div></aside>
+      </section>
+      <div class="lower-grid">${favoritesSection()}${leagueBoard(boardLeague)}${storiesSection()}</div>
       <footer><span><b>${esc(source)} DATA</b> · ${esc(zone)} · LAST REFRESH <strong id="footerUpdate">NOW</strong></span><span>${esc(config.odds?.disclaimer || 'ODDS INFORMATIONAL ONLY')}</span></footer>`;
     dashboard.querySelectorAll('[data-league]').forEach(button => button.addEventListener('click', () => {selectedLeague = button.dataset.league; render(); updateClock();}));
   }

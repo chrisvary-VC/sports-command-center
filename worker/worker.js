@@ -1,5 +1,7 @@
 const CACHE_TTL_SECONDS = 60;
+const ODDS_CACHE_TTL_SECONDS = 21600;
 const ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports';
+const ODDS_API_BASE = 'https://api.the-odds-api.com/v4';
 
 const FEEDS = [
   { league: 'NFL', path: 'football/nfl', cdn: 'nfl' },
@@ -19,24 +21,32 @@ export default {
       return withCors(json({
         ok: true,
         service: 'varycave-sports-gateway',
-        version: 5,
+        version: 7,
         feeds: FEEDS.map(feed => feed.league),
+        oddsProvider: env.ODDS_API_KEY ? 'the-odds-api' : 'public-feed-fallback',
         sportsEndpoint: '/api/sports'
       }));
     }
     if (url.pathname !== '/api/sports') return new Response('Not found', { status: 404 });
 
     const cache = caches.default;
-    const cacheKey = new Request(url.origin + '/api/sports?cache-version=7', { method: 'GET' });
+    const cacheKey = new Request(url.origin + '/api/sports?cache-version=8', { method: 'GET' });
     const cached = await cache.match(cacheKey);
     if (cached) return withCors(cached);
 
-    const results = await Promise.allSettled(FEEDS.map(loadFeed));
+    const [feedResults, bookmakerResult] = await Promise.all([
+      Promise.allSettled(FEEDS.map(loadFeed)),
+      env.ODDS_API_KEY ? loadBookmakerMarkets(env, url.origin, ctx).catch(error => ({
+        events: [], provider: 'the-odds-api', updatedAt: null, quota: {}, error: String(error)
+      })) : Promise.resolve({ events: [], provider: 'public-feed-fallback', updatedAt: null, quota: {} })
+    ]);
+    const results = feedResults;
     const events = results.flatMap((result, index) => result.status === 'fulfilled'
       ? result.value
       : [{ error: true, league: FEEDS[index].league, message: String(result.reason) }]);
     const validEvents = events.filter(event => !event.error);
     const errors = events.filter(event => event.error);
+    if (bookmakerResult.error) errors.push({ error: true, league: 'ODDS', message: bookmakerResult.error });
 
     if (!validEvents.length) {
       return withCors(json({ events: [], errors, generatedAt: new Date().toISOString(), source: 'espn-public' }, 503));
@@ -45,6 +55,10 @@ export default {
     const response = json({
       events: validEvents,
       tickerLanes: FEEDS.map((feed, index) => ({ league: feed.league, direction: index % 2 ? 'right' : 'left' })),
+      bookmakerEvents: bookmakerResult.events,
+      oddsProvider: bookmakerResult.provider,
+      oddsUpdatedAt: bookmakerResult.updatedAt,
+      oddsQuota: bookmakerResult.quota,
       generatedAt: new Date().toISOString(),
       source: 'espn-public',
       errors
@@ -53,6 +67,77 @@ export default {
     return withCors(response);
   }
 };
+
+async function loadBookmakerMarkets(env, origin, ctx) {
+  const cache = caches.default;
+  const cacheSeconds = Math.max(300, Number(env.ODDS_CACHE_TTL_SECONDS) || ODDS_CACHE_TTL_SECONDS);
+  const cacheKey = new Request(`${origin}/internal/bookmaker-markets?cache-version=1`, { method: 'GET' });
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached.json();
+
+  const query = new URLSearchParams({
+    apiKey: env.ODDS_API_KEY,
+    regions: 'us',
+    markets: 'h2h,spreads,totals',
+    oddsFormat: 'american',
+    dateFormat: 'iso'
+  });
+  const response = await fetch(`${ODDS_API_BASE}/sports/upcoming/odds?${query}`, {
+    headers: { accept: 'application/json' }
+  });
+  if (!response.ok) throw new Error(`The Odds API returned ${response.status}`);
+  const payload = await response.json();
+  const result = {
+    events: payload.map(normalizeBookmakerEvent).filter(event => event.bookmakers.length),
+    provider: 'the-odds-api',
+    updatedAt: new Date().toISOString(),
+    quota: {
+      remaining: response.headers.get('x-requests-remaining'),
+      used: response.headers.get('x-requests-used'),
+      last: response.headers.get('x-requests-last')
+    }
+  };
+  const cachedResponse = new Response(JSON.stringify(result), {
+    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': `public, max-age=${cacheSeconds}` }
+  });
+  ctx.waitUntil(cache.put(cacheKey, cachedResponse));
+  return result;
+}
+
+function normalizeBookmakerEvent(event) {
+  return {
+    id: event.id,
+    league: oddsLeague(event.sport_key, event.sport_title),
+    sportKey: event.sport_key,
+    awayName: event.away_team,
+    homeName: event.home_team,
+    start: event.commence_time,
+    bookmakers: (event.bookmakers || []).map(bookmaker => ({
+      key: bookmaker.key,
+      title: bookmaker.title,
+      lastUpdate: bookmaker.last_update,
+      markets: (bookmaker.markets || []).map(market => ({
+        key: market.key,
+        lastUpdate: market.last_update,
+        outcomes: (market.outcomes || []).map(outcome => ({
+          name: outcome.name,
+          price: outcome.price,
+          ...(outcome.point == null ? {} : { point: outcome.point })
+        }))
+      }))
+    })).filter(bookmaker => bookmaker.markets.length)
+  };
+}
+
+function oddsLeague(key, title) {
+  return ({
+    americanfootball_nfl: 'NFL',
+    americanfootball_ncaaf: 'NCAAF',
+    basketball_nba: 'NBA',
+    baseball_mlb: 'MLB',
+    icehockey_nhl: 'NHL'
+  })[key] || String(title || key || 'SPORT').toUpperCase();
+}
 
 async function loadFeed(feed) {
   const query = new URLSearchParams({ limit: String(feed.limit || 50) });

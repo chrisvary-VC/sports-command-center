@@ -119,7 +119,19 @@
     </article>`;
   }
 
-  function marketBoard(events) {
+  function marketBoard(events, bookmakerEvents = []) {
+    if (bookmakerEvents.length) {
+      const marketNames = { h2h: 'MONEYLINE', spreads: 'SPREAD', totals: 'TOTAL' };
+      const rows = bookmakerEvents.flatMap(event => event.bookmakers.slice(0, 3).map(bookmaker => {
+        const markets = bookmaker.markets.map(market => {
+          const outcomes = market.outcomes.map(outcome => `${outcome.name} ${outcome.point == null ? '' : `${outcome.point} `}${Number(outcome.price) > 0 ? '+' : ''}${outcome.price}`).join(' · ');
+          return `<span><small>${esc(marketNames[market.key] || market.key)}</small><b>${esc(outcomes)}</b></span>`;
+        }).join('');
+        return `<article class="market-row bookmaker"><header><b>${esc(event.league)}</b><span>${esc(bookmaker.title)} · ${esc(shortTime(event))} ${zone}</span></header><strong>${esc(event.awayName)} <i>vs</i> ${esc(event.homeName)}</strong><div>${markets}</div></article>`;
+      })).slice(0, 24).join('');
+      const bookCount = new Set(bookmakerEvents.flatMap(event => event.bookmakers.map(book => book.key))).size;
+      return `<aside class="market-panel"><header><div><p>US BOOKMAKER FEED</p><h2>Market wire</h2></div><span>${bookmakerEvents.length} EVENTS · ${bookCount} BOOKS</span></header><div class="market-window"><div class="market-track">${rows}${rows}</div></div><footer><span>SPREADS · TOTALS · MONEYLINES</span><b>THE ODDS API</b></footer></aside>`;
+    }
     const marketEvents = events.filter(event => event.odds && [event.odds.spread,event.odds.moneyline,event.odds.total].some(Boolean));
     const rows = marketEvents.map((event, index) => {
       const markets = [
@@ -129,7 +141,7 @@
       ].join('');
       return `<article class="market-row"><header><b>${esc(event.league)}</b><span>#${String(index + 1).padStart(3,'0')} · ${esc(shortTime(event))} ${zone}</span></header><strong>${esc(event.away)} <i>vs</i> ${esc(event.home)}</strong><div>${markets}</div></article>`;
     }).join('');
-    return `<aside class="market-panel"><header><div><p>LIVE MARKET FEED</p><h2>Market wire</h2></div><span>${marketEvents.length} EVENTS</span></header>${rows ? `<div class="market-window"><div class="market-track">${rows}${rows}</div></div>` : '<p class="empty-state">No live betting markets are currently supplied.</p>'}<footer><span>SPREADS · TOTALS · MONEYLINES</span><b>INFORMATIONAL ONLY</b></footer></aside>`;
+    return `<aside class="market-panel"><header><div><p>PUBLIC LINE FEED</p><h2>Market wire</h2></div><span>${marketEvents.length} EVENTS</span></header>${rows ? `<div class="market-window"><div class="market-track">${rows}${rows}</div></div>` : '<p class="empty-state">No betting markets are currently supplied.</p>'}<footer><span>SPREADS · TOTALS · MONEYLINES</span><b>BOOKMAKER FEED CONNECTING</b></footer></aside>`;
   }
 
   function leagueBoard(league) {
@@ -191,7 +203,7 @@
       <section class="command-grid">
         <aside class="scoreboard-panel"><header><div><p>${live.length ? `${live.length} LIVE NOW` : 'AROUND SPORTS'}</p><h2>Scoreboard</h2></div><span>${live.length ? `PAGE ${scoreboardPage + 1} / ${scoreboard.pages}` : 'ALL SPORTS'}</span></header><div class="score-grid">${scoreEvents.map(scoreCard).join('') || '<p class="empty-state">No events available.</p>'}</div></aside>
         ${featured(featureEvent)}
-        ${marketBoard(globalEvents)}
+        ${marketBoard(globalEvents, data.bookmakerEvents || [])}
       </section>
       ${tickerBand(globalEvents)}
       <div class="lower-grid">${leagueBoard(boardLeague)}${storiesSection()}</div>

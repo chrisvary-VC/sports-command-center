@@ -62,7 +62,7 @@
   }
 
   window.SPORTS_DATA = {
-    events: [], tickerLanes: [], leaguePages: [], stories: [], top25: [], top25Games: [],
+    events: [], bookmakerEvents: [], tickerLanes: [], leaguePages: [], stories: [], top25: [], top25Games: [],
     michigan: {
       team: 'MICHIGAN WOLVERINES', record: 'FEED OFFLINE', ranking: '', conference: 'BIG TEN',
       nextGame: { opponent: 'UNAVAILABLE', start: new Date().toISOString(), network: '', venue: '' },

@@ -9,8 +9,8 @@
     return [...new Set(events.map(event => event.league))].map(league => {
       const games = events.filter(event => event.league === league);
       const lead = games.find(event => stateOf(event) === 'live') || games.find(event => stateOf(event) === 'upcoming') || games[0];
-      const results = games.filter(event => stateOf(event) === 'final').slice(0, 3).map(event => ({ away: event.away, home: event.home, score: event.score || event.detail, detail: event.status }));
-      const upcoming = games.filter(event => stateOf(event) !== 'final').slice(0, 3).map(event => ({ away: event.away, home: event.home, detail: event.detail || event.status, odds: lineFor(event) }));
+      const results = games.filter(event => stateOf(event) === 'final').slice(0, 3).map(event => ({ away: event.away, awayLogo: event.awayLogo, home: event.home, homeLogo: event.homeLogo, score: event.score || event.detail, detail: event.status }));
+      const upcoming = games.filter(event => stateOf(event) !== 'final').slice(0, 3).map(event => ({ away: event.away, awayLogo: event.awayLogo, home: event.home, homeLogo: event.homeLogo, detail: event.detail || event.status, odds: lineFor(event) }));
       return {
         league,
         headline: `${league} LIVE LEAGUE BOARD`,
@@ -35,7 +35,7 @@
       events,
       tickerLanes: payload.tickerLanes || [...new Set(events.map(event => event.league))].map((league, index) => ({ league, direction: index % 2 ? 'right' : 'left' })),
       leaguePages: buildLeaguePages(events),
-      stories: [],
+      stories: (payload.news || []).slice(0, 4),
       top25: [],
       top25Games: [],
       michigan: {

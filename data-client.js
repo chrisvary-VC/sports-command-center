@@ -1,5 +1,6 @@
 (() => {
   const config = window.DASHBOARD_CONFIG || {};
+  const fallbackStories = Array.isArray(window.SPORTS_DATA?.stories) ? window.SPORTS_DATA.stories : [];
   const endpoint = config.data?.endpoint;
   const refreshMs = config.data?.refreshMs || 60000;
   const stateOf = event => /FINAL|FT/i.test(event.status || '') ? 'final' : /LIVE|TOP|BOT|Q[1-4]|HALF|LAP/i.test(event.status || '') ? 'live' : 'upcoming';
@@ -9,12 +10,13 @@
     return [...new Set(events.map(event => event.league))].map(league => {
       const games = events.filter(event => event.league === league);
       const lead = games.find(event => stateOf(event) === 'live') || games.find(event => stateOf(event) === 'upcoming') || games[0];
+      const isRacing = ['F1', 'INDYCAR'].includes(league);
       const results = games.filter(event => stateOf(event) === 'final').slice(0, 3).map(event => ({ away: event.away, awayLogo: event.awayLogo, home: event.home, homeLogo: event.homeLogo, score: event.score || event.detail, detail: event.status }));
       const upcoming = games.filter(event => stateOf(event) !== 'final').slice(0, 3).map(event => ({ away: event.away, awayLogo: event.awayLogo, home: event.home, homeLogo: event.homeLogo, detail: event.detail || event.status, odds: lineFor(event) }));
       return {
         league,
-        headline: `${league} LIVE LEAGUE BOARD`,
-        summary: `${games.length} games currently supplied by the live scoreboard feed.`,
+        headline: isRacing ? `RACE CONTROL · ${lead.eventName || league}` : `${league} LIVE LEAGUE BOARD`,
+        summary: isRacing ? `${games.length} timed sessions tracked across the next race weekend.` : `${games.length} games currently supplied by the live scoreboard feed.`,
         lead: { away: lead.away, home: lead.home, label: lead.status, time: lead.score || lead.detail || lead.status, odds: lineFor(lead) },
         results,
         upcoming,
@@ -35,7 +37,7 @@
       events,
       tickerLanes: payload.tickerLanes || [...new Set(events.map(event => event.league))].map((league, index) => ({ league, direction: index % 2 ? 'right' : 'left' })),
       leaguePages: buildLeaguePages(events),
-      stories: (payload.news || []).slice(0, 4),
+      stories: ((payload.news || []).length ? payload.news : fallbackStories).slice(0, 8),
       top25: [],
       top25Games: [],
       michigan: {
@@ -56,9 +58,34 @@
     if (config.data?.mode !== 'live' || !endpoint) throw new Error('Live sports endpoint is not configured');
     const response = await fetch(`${endpoint}?display=${Date.now()}`, { cache: 'no-store' });
     if (!response.ok) throw new Error(`Sports gateway returned ${response.status}`);
-    window.SPORTS_DATA = normalize(await response.json());
+    const payload = await response.json();
+    if (!(payload.news || []).length) payload.news = await loadEditorial();
+    window.SPORTS_DATA = normalize(payload);
     window.VARYCAVE_DATA_SOURCE = 'LIVE';
     return window.SPORTS_DATA;
+  }
+
+  async function loadEditorial() {
+    const feeds = [
+      ['NFL', 'football/nfl'], ['NBA', 'basketball/nba'], ['MLB', 'baseball/mlb'],
+      ['NHL', 'hockey/nhl'], ['NCAAF', 'football/college-football'], ['F1', 'racing/f1']
+    ];
+    const results = await Promise.allSettled(feeds.map(async ([league, path]) => {
+      const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${path}/news?limit=2`, { cache: 'no-store' });
+      if (!response.ok) return [];
+      const payload = await response.json();
+      return (payload.articles || []).map(article => ({
+        id: article.id || article.links?.web?.href,
+        league,
+        headline: article.headline || article.title,
+        description: article.description || '',
+        image: article.images?.[0]?.url || '',
+        url: article.links?.web?.href || '',
+        byline: article.byline || 'ESPN',
+        published: article.published || article.lastModified || null
+      })).filter(article => article.headline);
+    }));
+    return results.flatMap(result => result.status === 'fulfilled' ? result.value : []).slice(0, 8);
   }
 
   window.SPORTS_DATA = {

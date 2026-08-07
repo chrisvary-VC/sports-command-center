@@ -20,11 +20,11 @@
   <script src="config.js?v=6.9"></script>
   <script src="assets.js?v=6.8"></script>
   <script src="mock-data.js?v=6.8"></script>
-  <script src="data-client.js?v=6.9"></script>
+  <script src="data-client.js?v=7.0"></script>
   <script>
     Promise.resolve(window.SPORTS_DATA_READY).finally(function () {
       var script = document.createElement('script');
-      script.src = 'command-center.js?v=6.9';
+      script.src = 'command-center.js?v=7.0';
       script.onerror = function () {
         document.getElementById('bootScreen')?.remove();
         document.getElementById('dashboard').innerHTML = '<p class="fatal-state">The dashboard could not start. Refresh to try again.</p>';

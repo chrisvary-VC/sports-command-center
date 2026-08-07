@@ -13,6 +13,8 @@ const FEEDS = [
   { league: 'INDYCAR', path: 'racing/irl', cdn: 'irl' }
 ];
 
+const NEWS_FEEDS = FEEDS.filter(feed => ['NFL', 'NBA', 'MLB', 'NHL', 'NCAAF', 'F1'].includes(feed.league));
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -21,7 +23,7 @@ export default {
       return withCors(json({
         ok: true,
         service: 'varycave-sports-gateway',
-        version: 7,
+        version: 10,
         feeds: FEEDS.map(feed => feed.league),
         oddsProvider: env.ODDS_API_KEY ? 'the-odds-api' : 'public-feed-fallback',
         sportsEndpoint: '/api/sports'
@@ -30,12 +32,13 @@ export default {
     if (url.pathname !== '/api/sports') return new Response('Not found', { status: 404 });
 
     const cache = caches.default;
-    const cacheKey = new Request(url.origin + '/api/sports?cache-version=8', { method: 'GET' });
+    const cacheKey = new Request(url.origin + '/api/sports?cache-version=11', { method: 'GET' });
     const cached = await cache.match(cacheKey);
     if (cached) return withCors(cached);
 
-    const [feedResults, bookmakerResult] = await Promise.all([
+    const [feedResults, news, bookmakerResult] = await Promise.all([
       Promise.allSettled(FEEDS.map(loadFeed)),
+      loadNews(),
       env.ODDS_API_KEY ? loadBookmakerMarkets(env, url.origin, ctx).catch(error => ({
         events: [], provider: 'the-odds-api', updatedAt: null, quota: {}, error: String(error)
       })) : Promise.resolve({ events: [], provider: 'public-feed-fallback', updatedAt: null, quota: {} })
@@ -54,6 +57,7 @@ export default {
 
     const response = json({
       events: validEvents,
+      news,
       tickerLanes: FEEDS.map((feed, index) => ({ league: feed.league, direction: index % 2 ? 'right' : 'left' })),
       bookmakerEvents: bookmakerResult.events,
       oddsProvider: bookmakerResult.provider,
@@ -140,6 +144,8 @@ function oddsLeague(key, title) {
 }
 
 async function loadFeed(feed) {
+  if (feed.league === 'F1') return loadF1Feed();
+  if (feed.league === 'INDYCAR') return loadRaceFeed(feed);
   const query = new URLSearchParams({ limit: String(feed.limit || 50) });
   let response = await fetch(`${ESPN_BASE}/${feed.path}/scoreboard?${query}`, {
     headers: {
@@ -169,6 +175,119 @@ async function loadFeed(feed) {
     events = [...events, ...scheduleEvents.filter(event => !seen.has(event.id || event.uid))];
   }
   return events.map(event => normalizeEvent(event, feed.league)).filter(Boolean);
+}
+
+async function loadF1Feed() {
+  const year = new Date().getUTCFullYear();
+  const response = await fetch(`https://api.jolpi.ca/ergast/f1/${year}.json`, {
+    headers: { accept: 'application/json' }
+  });
+  if (!response.ok) throw new Error(`F1 schedule feed returned ${response.status}`);
+  const payload = await response.json();
+  const races = payload.MRData?.RaceTable?.Races || [];
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  return races.flatMap(race => {
+    const sessions = [
+      ['FP1', race.FirstPractice],
+      ['FP2', race.SecondPractice],
+      ['FP3', race.ThirdPractice],
+      ['SPRINT', race.Sprint],
+      ['QUALIFYING', race.Qualifying],
+      ['RACE', { date: race.date, time: race.time }]
+    ].filter(([, session]) => session?.date);
+    return sessions.map(([name, session]) => ({
+      id: `F1-${race.round}-${name}`,
+      league: 'F1',
+      eventName: race.raceName,
+      session: name,
+      status: 'UPCOMING',
+      title: `${race.raceName} · ${name}`,
+      away: name,
+      awayName: name,
+      awayLogo: '',
+      home: 'F1',
+      homeName: race.raceName,
+      homeLogo: '',
+      start: `${session.date}T${session.time || '00:00:00Z'}`,
+      venue: race.Circuit?.circuitName || race.raceName,
+      network: 'Apple TV',
+      score: '',
+      detail: `${name} · ROUND ${race.round}`,
+      odds: null
+    }));
+  }).filter(session => new Date(session.start).getTime() >= cutoff)
+    .sort((a, b) => new Date(a.start) - new Date(b.start))
+    .slice(0, 10);
+}
+
+async function loadRaceFeed(feed) {
+  const year = new Date().getUTCFullYear();
+  const response = await fetch(`${ESPN_BASE}/${feed.path}/scoreboard?dates=${year}&limit=100&feed-version=2`, {
+    headers: { accept: 'application/json, text/plain, */*' }
+  });
+  if (!response.ok) throw new Error(`${feed.league} season feed returned ${response.status}`);
+  const payload = await response.json();
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  return (payload.events || [])
+    .flatMap(event => normalizeRaceWeekend(event, feed.league))
+    .filter(session => new Date(session.start).getTime() >= cutoff)
+    .sort((a, b) => new Date(a.start) - new Date(b.start))
+    .slice(0, 10);
+}
+
+function normalizeRaceWeekend(event, league) {
+  const sessions = event.competitions || [];
+  const raceName = event.shortName || event.name || `${league} RACE WEEKEND`;
+  const location = raceName.replace(/^(Heineken|Qatar Airways|Pirelli|MSC Cruises|Lenovo|AWS|Crypto\.com)\s+/i, '');
+  return sessions.map((competition, index) => {
+    const type = competition.type?.abbreviation || (index === sessions.length - 1 ? 'RACE' : `SESSION ${index + 1}`);
+    const status = competition.status || event.status || {};
+    const statusText = status.type?.shortDetail || status.type?.detail || 'UPCOMING';
+    const isStarted = Boolean(status.type?.state && status.type.state !== 'pre');
+    return {
+      id: competition.id || `${event.id}-${type}`,
+      league,
+      eventName: raceName,
+      session: type.toUpperCase(),
+      status: statusText.toUpperCase(),
+      title: `${raceName} · ${type}`,
+      away: type.toUpperCase(),
+      awayName: type.toUpperCase(),
+      awayLogo: '',
+      home: league,
+      homeName: location,
+      homeLogo: '',
+      start: competition.date || event.date,
+      venue: competition.venue?.fullName || location,
+      network: competition.broadcasts?.[0]?.names?.join(' / ') || '',
+      score: isStarted ? (statusText || type).toUpperCase() : '',
+      detail: statusText,
+      odds: null
+    };
+  });
+}
+
+async function loadNews() {
+  const results = await Promise.allSettled(NEWS_FEEDS.map(async feed => {
+    const response = await fetch(`${ESPN_BASE}/${feed.path}/news?limit=4&feed-version=2`, {
+      headers: { accept: 'application/json, text/plain, */*' }
+    });
+    if (!response.ok) throw new Error(`${feed.league} news returned ${response.status}`);
+    const payload = await response.json();
+    return (payload.articles || []).map(article => ({
+      id: article.id || article.links?.web?.href,
+      league: feed.league,
+      headline: article.headline || article.title,
+      description: article.description || '',
+      image: article.images?.[0]?.url || '',
+      url: article.links?.web?.href || '',
+      byline: article.byline || 'ESPN',
+      published: article.published || article.lastModified || null
+    })).filter(article => article.headline);
+  }));
+  const articles = results.flatMap(result => result.status === 'fulfilled' ? result.value : []);
+  const seen = new Set();
+  return articles.filter(article => article.id && !seen.has(article.id) && seen.add(article.id)).slice(0, 12);
 }
 
 async function loadForwardSchedule(feed, firstEvent) {

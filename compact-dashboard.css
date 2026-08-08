@@ -132,6 +132,9 @@
 @media(max-width:1050px){.stories-section .story-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.visual-story{overflow:hidden}.story-photo{height:120px;background-size:cover;background-position:center}.story-copy{padding:10px}}
 @media(max-width:680px){.stories-section .story-grid{grid-template-columns:1fr}}
 
+/* v7.1 team standing labels */
+.score-team>span{display:flex;min-width:0;flex-direction:column}.score-team>span small{max-width:72px;color:var(--maize);font:700 7px/1.05 "Archivo Narrow";white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.score-team:last-child>span{text-align:right}
+
 /* v6.8 auto-scrolling real-time sportsbook wire */
 @media (min-width:1051px){
   .market-panel{display:grid;grid-template-rows:38px 1fr 18px;min-width:0}

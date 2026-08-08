@@ -23,7 +23,7 @@ export default {
       return withCors(json({
         ok: true,
         service: 'varycave-sports-gateway',
-        version: 10,
+        version: 11,
         feeds: FEEDS.map(feed => feed.league),
         oddsProvider: env.ODDS_API_KEY ? 'the-odds-api' : 'public-feed-fallback',
         sportsEndpoint: '/api/sports'
@@ -32,7 +32,7 @@ export default {
     if (url.pathname !== '/api/sports') return new Response('Not found', { status: 404 });
 
     const cache = caches.default;
-    const cacheKey = new Request(url.origin + '/api/sports?cache-version=11', { method: 'GET' });
+    const cacheKey = new Request(url.origin + '/api/sports?cache-version=12', { method: 'GET' });
     const cached = await cache.match(cacheKey);
     if (cached) return withCors(cached);
 
@@ -204,10 +204,10 @@ async function loadF1Feed() {
       title: `${race.raceName} · ${name}`,
       away: name,
       awayName: name,
-      awayLogo: '',
+      awayLogo: 'https://a.espncdn.com/i/teamlogos/leagues/500/f1.png',
       home: 'F1',
       homeName: race.raceName,
-      homeLogo: '',
+      homeLogo: 'https://a.espncdn.com/i/teamlogos/leagues/500/f1.png',
       start: `${session.date}T${session.time || '00:00:00Z'}`,
       venue: race.Circuit?.circuitName || race.raceName,
       network: 'Apple TV',

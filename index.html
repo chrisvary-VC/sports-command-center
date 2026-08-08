@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="command-center.css?v=6.9">
-  <link rel="stylesheet" href="compact-dashboard.css?v=6.9">
+  <link rel="stylesheet" href="compact-dashboard.css?v=7.1">
 </head>
 <body>
   <div class="boot-screen" id="bootScreen">
@@ -20,11 +20,11 @@
   <script src="config.js?v=6.9"></script>
   <script src="assets.js?v=6.8"></script>
   <script src="mock-data.js?v=6.8"></script>
-  <script src="data-client.js?v=7.0"></script>
+  <script src="data-client.js?v=7.1"></script>
   <script>
     Promise.resolve(window.SPORTS_DATA_READY).finally(function () {
       var script = document.createElement('script');
-      script.src = 'command-center.js?v=7.0';
+      script.src = 'command-center.js?v=7.1';
       script.onerror = function () {
         document.getElementById('bootScreen')?.remove();
         document.getElementById('dashboard').innerHTML = '<p class="fatal-state">The dashboard could not start. Refresh to try again.</p>';

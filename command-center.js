@@ -24,6 +24,7 @@
   const eventDate = event => new Date(event.start);
   const dateTime = event => new Intl.DateTimeFormat('en-US', {timeZone:tz, weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}).format(eventDate(event));
   const shortTime = event => new Intl.DateTimeFormat('en-US', {timeZone:tz, hour:'numeric', minute:'2-digit'}).format(eventDate(event));
+  const standing = value => value ? `${value.label}${value.record ? ` · ${value.record}` : ''}` : '';
   const source = window.VARYCAVE_DATA_SOURCE || 'DEMO';
 
   function reasonFor(event) {
@@ -78,9 +79,9 @@
     return `<article class="score-card ${isLive(event) ? 'is-live' : ''}">
       <div class="score-card-top"><span>${esc(event.league)}</span><b>${esc(reasonFor(event))}</b></div>
       <div class="score-card-match">
-        <div class="score-team"><i>${logo(event.away, event.awayLogo)}</i><strong>${esc(event.away)}</strong></div>
+        <div class="score-team"><i>${logo(event.away, event.awayLogo)}</i><span><strong>${esc(event.away)}</strong>${event.awayStanding ? `<small>${esc(standing(event.awayStanding))}</small>` : ''}</span></div>
         <em>${esc(event.score || 'VS')}</em>
-        <div class="score-team"><i>${logo(event.home, event.homeLogo)}</i><strong>${esc(event.home)}</strong></div>
+        <div class="score-team"><i>${logo(event.home, event.homeLogo)}</i><span><strong>${esc(event.home)}</strong>${event.homeStanding ? `<small>${esc(standing(event.homeStanding))}</small>` : ''}</span></div>
       </div>
       <div class="score-card-meta"><strong>${esc(status)}</strong><span>${esc(event.network || '')}</span></div>
     </article>`;
@@ -97,9 +98,9 @@
         <p class="feature-label">VARYCAVE HERO EVENT</p>
         <h1>${esc(event.awayName || event.away)} <span>vs</span> ${esc(event.homeName || event.home)}</h1>
         <div class="feature-matchup">
-          <div class="feature-team">${logo(event.away, event.awayLogo)}<span><strong>${esc(event.away)}</strong><small>${esc(event.awayName || 'AWAY')}</small></span></div>
+          <div class="feature-team">${logo(event.away, event.awayLogo)}<span><strong>${esc(event.away)}</strong><small>${esc(event.awayStanding ? standing(event.awayStanding) : event.awayName || 'AWAY')}</small></span></div>
           <div class="feature-score"><small>${esc(isLive(event) ? gameStatus : 'STARTS')}</small><b>${esc(event.score || `${shortTime(event)} ${zone}`)}</b></div>
-          <div class="feature-team feature-team-home">${logo(event.home, event.homeLogo)}<span><strong>${esc(event.home)}</strong><small>${esc(event.homeName || 'HOME')}</small></span></div>
+          <div class="feature-team feature-team-home">${logo(event.home, event.homeLogo)}<span><strong>${esc(event.home)}</strong><small>${esc(event.homeStanding ? standing(event.homeStanding) : event.homeName || 'HOME')}</small></span></div>
         </div>
         <div class="feature-facts">
           <span><small>STATUS</small><strong>${esc(gameStatus)}</strong><em>${esc(dateTime(event))} ${zone}</em></span>
@@ -120,19 +121,20 @@
   }
 
   function marketBoard(events, bookmakerEvents = []) {
-    if (bookmakerEvents.length) {
+    const allowedMarkets = bookmakerEvents.filter(event => ['NFL','NCAAF','MLB','NBA'].includes(event.league));
+    if (allowedMarkets.length) {
       const marketNames = { h2h: 'MONEYLINE', spreads: 'SPREAD', totals: 'TOTAL' };
-      const rows = bookmakerEvents.flatMap(event => event.bookmakers.slice(0, 3).map(bookmaker => {
+      const rows = allowedMarkets.flatMap(event => event.bookmakers.slice(0, 3).map(bookmaker => {
         const markets = bookmaker.markets.map(market => {
           const outcomes = market.outcomes.map(outcome => `${outcome.name} ${outcome.point == null ? '' : `${outcome.point} `}${Number(outcome.price) > 0 ? '+' : ''}${outcome.price}`).join(' · ');
           return `<span><small>${esc(marketNames[market.key] || market.key)}</small><b>${esc(outcomes)}</b></span>`;
         }).join('');
         return `<article class="market-row bookmaker"><header><b>${esc(event.league)}</b><span>${esc(bookmaker.title)} · ${esc(shortTime(event))} ${zone}</span></header><strong>${esc(event.awayName)} <i>vs</i> ${esc(event.homeName)}</strong><div>${markets}</div></article>`;
       })).slice(0, 24).join('');
-      const bookCount = new Set(bookmakerEvents.flatMap(event => event.bookmakers.map(book => book.key))).size;
-      return `<aside class="market-panel"><header><div><p>US BOOKMAKER FEED</p><h2>Market wire</h2></div><span>${bookmakerEvents.length} EVENTS · ${bookCount} BOOKS</span></header><div class="market-window"><div class="market-track">${rows}${rows}</div></div><footer><span>SPREADS · TOTALS · MONEYLINES</span><b>THE ODDS API</b></footer></aside>`;
+      const bookCount = new Set(allowedMarkets.flatMap(event => event.bookmakers.map(book => book.key))).size;
+      return `<aside class="market-panel"><header><div><p>FOOTBALL · BASEBALL · BASKETBALL</p><h2>Market wire</h2></div><span>${allowedMarkets.length} EVENTS · ${bookCount} BOOKS</span></header><div class="market-window"><div class="market-track">${rows}${rows}</div></div><footer><span>SPREADS · TOTALS · MONEYLINES</span><b>THE ODDS API</b></footer></aside>`;
     }
-    const marketEvents = events.filter(event => event.odds && [event.odds.spread,event.odds.moneyline,event.odds.total].some(Boolean));
+    const marketEvents = events.filter(event => ['NFL','NCAAF','MLB','NBA'].includes(event.league) && event.odds && [event.odds.spread,event.odds.moneyline,event.odds.total].some(Boolean));
     const rows = marketEvents.map((event, index) => {
       const markets = [
         event.odds.spread ? `<span><small>LINE</small><b>${esc(event.odds.spread)}</b></span>` : '',
@@ -147,8 +149,9 @@
   function leagueBoard(league) {
     const page = (data.leaguePages || []).find(item => item.league === league) || (data.leaguePages || [])[0];
     if (!page) return '<div class="empty-state">No league detail is available.</div>';
-    const resultRows = (page.results || []).map(game => `<div class="board-row"><span>${logo(game.away, game.awayLogo)}</span><strong>${esc(game.away)} <i>vs</i> ${esc(game.home)}</strong><em>${esc(game.score)}</em><small>${esc(game.detail)}</small></div>`).join('');
-    const upcomingRows = (page.upcoming || []).map(game => `<div class="board-row"><span>${logo(game.away, game.awayLogo)}</span><strong>${esc(game.away)} <i>vs</i> ${esc(game.home)}</strong><em>${esc(game.odds || '')}</em><small>${esc(game.detail)}</small></div>`).join('');
+    const boardRanks = game => [game.awayStanding ? `${game.away} ${standing(game.awayStanding)}` : '', game.homeStanding ? `${game.home} ${standing(game.homeStanding)}` : ''].filter(Boolean).join(' · ');
+    const resultRows = (page.results || []).map(game => `<div class="board-row"><span>${logo(game.away, game.awayLogo)}</span><strong>${esc(game.away)} <i>vs</i> ${esc(game.home)}</strong><em>${esc(game.score)}</em><small>${esc(boardRanks(game) || game.detail)}</small></div>`).join('');
+    const upcomingRows = (page.upcoming || []).map(game => `<div class="board-row"><span>${logo(game.away, game.awayLogo)}</span><strong>${esc(game.away)} <i>vs</i> ${esc(game.home)}</strong><em>${esc(game.odds || '')}</em><small>${esc(boardRanks(game) || game.detail)}</small></div>`).join('');
     return `<section class="section league-section">
       <header class="section-head"><div><p>SELECTED LEAGUE</p><h2>${esc(leagueNames[page.league] || page.league)} Board</h2></div><span>RESULTS · UPCOMING · CONTEXT</span></header>
       <div class="league-summary"><div><b>LEAGUE STORYLINE</b><h3>${esc(page.headline)}</h3><p>${esc(page.summary)}</p></div><div class="stakes"><b>GAME WITH STAKES</b><strong>${esc(page.lead.away)} vs ${esc(page.lead.home)}</strong><span>${esc(page.lead.time)} · ${esc(page.lead.odds)}</span></div></div>

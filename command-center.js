@@ -36,6 +36,30 @@
   const shortTime = event => new Intl.DateTimeFormat('en-US', {timeZone:tz, hour:'numeric', minute:'2-digit'}).format(eventDate(event));
   const standing = value => value ? `${value.label}${value.record ? ` · ${value.record}` : ''}` : '';
   const source = window.VARYCAVE_DATA_SOURCE || 'DEMO';
+  const cleanTeamName = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  function marketTeam(name, league, suppliedLogo = '') {
+    const target = cleanTeamName(name);
+    const eventMatch = (data.events || []).find(event => event.league === league && [event.awayName,event.homeName].some(team => {
+      const clean = cleanTeamName(team);
+      return clean && (clean === target || clean.includes(target) || target.includes(clean));
+    }));
+    let code = '';
+    let teamLogo = suppliedLogo;
+    if (eventMatch) {
+      const awayMatch = [eventMatch.awayName,eventMatch.away].some(team => target.includes(cleanTeamName(team)) || cleanTeamName(team).includes(target));
+      code = awayMatch ? eventMatch.away : eventMatch.home;
+      teamLogo ||= awayMatch ? eventMatch.awayLogo : eventMatch.homeLogo;
+    }
+    if (!teamLogo) {
+      const standingEntry = Object.entries(data.standings?.[league] || {}).find(([,team]) => {
+        const clean = cleanTeamName(team.name);
+        return clean && (clean === target || clean.includes(target) || target.includes(clean));
+      });
+      if (standingEntry) { code = standingEntry[0]; teamLogo = standingEntry[1].logo; }
+    }
+    return `<span class="market-team">${logo(code || String(name).slice(0,3).toUpperCase(), teamLogo)}<b>${esc(name)}</b></span>`;
+  }
 
   function reasonFor(event) {
     if (isFavorite(event)) return 'FOLLOWING';
@@ -139,7 +163,7 @@
           const outcomes = market.outcomes.map(outcome => `${outcome.name} ${outcome.point == null ? '' : `${outcome.point} `}${Number(outcome.price) > 0 ? '+' : ''}${outcome.price}`).join(' · ');
           return `<span><small>${esc(marketNames[market.key] || market.key)}</small><b>${esc(outcomes)}</b></span>`;
         }).join('');
-        return `<article class="market-row bookmaker"><header><b>${esc(leagueNames[event.league] || event.league)}</b><span>${esc(bookmaker.title)} · ${esc(shortTime(event))} ${zone}</span></header><strong>${esc(event.awayName)} <i>vs</i> ${esc(event.homeName)}</strong><div>${markets}</div></article>`;
+        return `<article class="market-row bookmaker"><header><b>${esc(leagueNames[event.league] || event.league)}</b><span>${esc(bookmaker.title)} · ${esc(shortTime(event))} ${zone}</span></header><div class="market-matchup">${marketTeam(event.awayName,event.league)}<i>vs</i>${marketTeam(event.homeName,event.league)}</div><div class="market-lines">${markets}</div></article>`;
       })).slice(0, 24).join('');
       const bookCount = new Set(allowedMarkets.flatMap(event => event.bookmakers.map(book => book.key))).size;
       return `<aside class="market-panel"><header><div><p>FOOTBALL · BASEBALL · BASKETBALL</p><h2>Market wire</h2></div><span>${allowedMarkets.length} EVENTS · ${bookCount} BOOKS</span></header><div class="market-window"><div class="market-track">${rows}${rows}</div></div><footer><span>SPREADS · TOTALS · MONEYLINES</span><b>THE ODDS API</b></footer></aside>`;
@@ -151,7 +175,7 @@
         event.odds.total ? `<span><small>TOTAL</small><b>${esc(event.odds.total)}</b></span>` : '',
         event.odds.moneyline ? `<span><small>MONEYLINE</small><b>${esc(event.odds.moneyline)}</b></span>` : ''
       ].join('');
-      return `<article class="market-row"><header><b>${esc(leagueNames[event.league] || event.league)}</b><span>#${String(index + 1).padStart(3,'0')} · ${esc(shortTime(event))} ${zone}</span></header><strong>${esc(event.away)} <i>vs</i> ${esc(event.home)}</strong><div>${markets}</div></article>`;
+      return `<article class="market-row"><header><b>${esc(leagueNames[event.league] || event.league)}</b><span>#${String(index + 1).padStart(3,'0')} · ${esc(shortTime(event))} ${zone}</span></header><div class="market-matchup">${marketTeam(event.awayName || event.away,event.league,event.awayLogo)}<i>vs</i>${marketTeam(event.homeName || event.home,event.league,event.homeLogo)}</div><div class="market-lines">${markets}</div></article>`;
     }).join('');
     return `<aside class="market-panel"><header><div><p>PUBLIC LINE FEED</p><h2>Market wire</h2></div><span>${marketEvents.length} EVENTS</span></header>${rows ? `<div class="market-window"><div class="market-track">${rows}${rows}</div></div>` : '<p class="empty-state">No betting markets are currently supplied.</p>'}<footer><span>SPREADS · TOTALS · MONEYLINES</span><b>BOOKMAKER FEED CONNECTING</b></footer></aside>`;
   }

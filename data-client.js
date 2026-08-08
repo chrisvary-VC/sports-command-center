@@ -96,7 +96,9 @@
           teams[entry.team.abbreviation] = {
             rank: seed,
             label: `#${seed} ${groupName}`,
-            record: wins != null && losses != null ? `${wins}-${losses}` : (stats.overall?.displayValue || '')
+            record: wins != null && losses != null ? `${wins}-${losses}` : (stats.overall?.displayValue || ''),
+            name: entry.team.displayName || entry.team.name || entry.team.abbreviation,
+            logo: entry.team.logos?.[0]?.href || entry.team.logo || ''
           };
         });
         (group.children || []).forEach(visit);
@@ -111,7 +113,7 @@
       const payload = response.ok ? await response.json() : {};
       output.NCAAF = {};
       (payload.rankings?.[0]?.ranks || []).forEach(entry => {
-        output.NCAAF[entry.team.abbreviation] = { rank: entry.current, label: `AP #${entry.current}`, record: entry.recordSummary || '' };
+        output.NCAAF[entry.team.abbreviation] = { rank: entry.current, label: `AP #${entry.current}`, record: entry.recordSummary || '', name: entry.team.location || entry.team.name || entry.team.abbreviation, logo: entry.team.logo || entry.team.logos?.[0]?.href || '' };
       });
     } catch (error) {
       output.NCAAF = {};

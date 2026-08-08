@@ -135,6 +135,11 @@
 /* v7.1 team standing labels */
 .score-team>span{display:flex;min-width:0;flex-direction:column}.score-team>span small{max-width:72px;color:var(--maize);font:700 7px/1.05 "Archivo Narrow";white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.score-team:last-child>span{text-align:right}
 
+/* v7.2 branded league navigation */
+.brand>img{width:72px!important;height:54px!important;filter:drop-shadow(0 0 10px rgba(43,134,197,.22))}.brand strong{text-transform:none}
+.league-nav .nav-sport{display:flex;align-items:center;min-width:0;gap:8px}.league-nav .nav-sport img{width:25px;height:25px;object-fit:contain;flex:0 0 auto}.league-nav .nav-sport strong{font:700 13px "Archivo Narrow";white-space:nowrap}.league-nav button.active .nav-sport img{filter:drop-shadow(0 1px 1px rgba(0,0,0,.22))}
+@media(max-width:680px){.brand>img{width:52px!important;height:42px!important}.league-nav .nav-sport{gap:5px}.league-nav .nav-sport img{width:21px;height:21px}.league-nav .nav-sport strong{font-size:12px}}
+
 /* v6.8 auto-scrolling real-time sportsbook wire */
 @media (min-width:1051px){
   .market-panel{display:grid;grid-template-rows:38px 1fr 18px;min-width:0}

@@ -13,18 +13,18 @@
 </head>
 <body>
   <div class="boot-screen" id="bootScreen">
-    <img src="assets/varycreative-mark.svg" alt="VC">
-    <div><strong>VARYCAVE</strong><span>SPORTSCENTER</span><small>BUILDING YOUR BOARD</small></div>
+    <img src="assets/varycave-glass-vc.png" alt="VaryCave VC">
+    <div><strong>VaryCave</strong><span>SportsCenter</span><small>BUILDING YOUR BOARD</small></div>
   </div>
   <main class="dashboard" id="dashboard" aria-live="polite"></main>
   <script src="config.js?v=6.9"></script>
   <script src="assets.js?v=6.8"></script>
   <script src="mock-data.js?v=6.8"></script>
-  <script src="data-client.js?v=7.1"></script>
+  <script src="data-client.js?v=7.2"></script>
   <script>
     Promise.resolve(window.SPORTS_DATA_READY).finally(function () {
       var script = document.createElement('script');
-      script.src = 'command-center.js?v=7.1';
+      script.src = 'command-center.js?v=7.2';
       script.onerror = function () {
         document.getElementById('bootScreen')?.remove();
         document.getElementById('dashboard').innerHTML = '<p class="fatal-state">The dashboard could not start. Refresh to try again.</p>';

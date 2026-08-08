@@ -7,7 +7,17 @@
   const zone = config.timeZoneLabel || 'CT';
   const sports = config.enabledSports || [];
   const favoriteCodes = Object.values(config.favorites || {}).flat();
-  const leagueNames = {ALL:'All Sports', NFL:'NFL', NBA:'NBA', MLB:'MLB', NHL:'NHL', NCAAF:'College', F1:'Formula 1', INDYCAR:'IndyCar'};
+  const leagueNames = {ALL:'All Sports', NFL:'NFL', NBA:'NBA', MLB:'MLB', NHL:'NHL', NCAAF:'NCAA', F1:'Formula 1', INDYCAR:'IndyCar'};
+  const leagueLogos = {
+    ALL:'assets/varycave-glass-vc.png',
+    NFL:'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png',
+    NBA:'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png',
+    MLB:'https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png',
+    NHL:'https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png',
+    NCAAF:'https://a.espncdn.com/i/espn/misc_logos/500/ncaa.png',
+    F1:'https://a.espncdn.com/i/teamlogos/leagues/500/f1.png',
+    INDYCAR:'https://a.espncdn.com/i/teamlogos/leagues/500/irl.png'
+  };
   let selectedLeague = 'ALL';
   let leagueRotationIndex = -1;
   let rotationPausedUntil = 0;
@@ -77,7 +87,7 @@
   function scoreCard(event) {
     const status = isLive(event) ? event.detail || event.status : isFinal(event) ? 'FINAL' : `${shortTime(event)} ${zone}`;
     return `<article class="score-card ${isLive(event) ? 'is-live' : ''}">
-      <div class="score-card-top"><span>${esc(event.league)}</span><b>${esc(reasonFor(event))}</b></div>
+      <div class="score-card-top"><span>${esc(leagueNames[event.league] || event.league)}</span><b>${esc(reasonFor(event))}</b></div>
       <div class="score-card-match">
         <div class="score-team"><i>${logo(event.away, event.awayLogo)}</i><span><strong>${esc(event.away)}</strong>${event.awayStanding ? `<small>${esc(standing(event.awayStanding))}</small>` : ''}</span></div>
         <em>${esc(event.score || 'VS')}</em>
@@ -94,7 +104,7 @@
       <div class="feature-art" style="background-image:linear-gradient(90deg,rgba(6,17,30,.98),rgba(6,17,30,.78),rgba(6,17,30,.35)),url('${esc(assets.eventImages?.[event.id] || assets.heroImages?.[event.league] || '')}')"></div>
       <div class="feature-watermarks"><i>${logo(event.away, event.awayLogo)}</i><i>${logo(event.home, event.homeLogo)}</i></div>
       <div class="feature-content">
-        <div class="eyebrow"><span class="live-pill">${esc(isLive(event) ? event.status : event.league)}</span><span>${esc(reasonFor(event))}</span></div>
+        <div class="eyebrow"><span class="live-pill">${esc(isLive(event) ? event.status : leagueNames[event.league] || event.league)}</span><span>${esc(reasonFor(event))}</span></div>
         <p class="feature-label">VARYCAVE HERO EVENT</p>
         <h1>${esc(event.awayName || event.away)} <span>vs</span> ${esc(event.homeName || event.home)}</h1>
         <div class="feature-matchup">
@@ -129,7 +139,7 @@
           const outcomes = market.outcomes.map(outcome => `${outcome.name} ${outcome.point == null ? '' : `${outcome.point} `}${Number(outcome.price) > 0 ? '+' : ''}${outcome.price}`).join(' · ');
           return `<span><small>${esc(marketNames[market.key] || market.key)}</small><b>${esc(outcomes)}</b></span>`;
         }).join('');
-        return `<article class="market-row bookmaker"><header><b>${esc(event.league)}</b><span>${esc(bookmaker.title)} · ${esc(shortTime(event))} ${zone}</span></header><strong>${esc(event.awayName)} <i>vs</i> ${esc(event.homeName)}</strong><div>${markets}</div></article>`;
+        return `<article class="market-row bookmaker"><header><b>${esc(leagueNames[event.league] || event.league)}</b><span>${esc(bookmaker.title)} · ${esc(shortTime(event))} ${zone}</span></header><strong>${esc(event.awayName)} <i>vs</i> ${esc(event.homeName)}</strong><div>${markets}</div></article>`;
       })).slice(0, 24).join('');
       const bookCount = new Set(allowedMarkets.flatMap(event => event.bookmakers.map(book => book.key))).size;
       return `<aside class="market-panel"><header><div><p>FOOTBALL · BASEBALL · BASKETBALL</p><h2>Market wire</h2></div><span>${allowedMarkets.length} EVENTS · ${bookCount} BOOKS</span></header><div class="market-window"><div class="market-track">${rows}${rows}</div></div><footer><span>SPREADS · TOTALS · MONEYLINES</span><b>THE ODDS API</b></footer></aside>`;
@@ -141,7 +151,7 @@
         event.odds.total ? `<span><small>TOTAL</small><b>${esc(event.odds.total)}</b></span>` : '',
         event.odds.moneyline ? `<span><small>MONEYLINE</small><b>${esc(event.odds.moneyline)}</b></span>` : ''
       ].join('');
-      return `<article class="market-row"><header><b>${esc(event.league)}</b><span>#${String(index + 1).padStart(3,'0')} · ${esc(shortTime(event))} ${zone}</span></header><strong>${esc(event.away)} <i>vs</i> ${esc(event.home)}</strong><div>${markets}</div></article>`;
+      return `<article class="market-row"><header><b>${esc(leagueNames[event.league] || event.league)}</b><span>#${String(index + 1).padStart(3,'0')} · ${esc(shortTime(event))} ${zone}</span></header><strong>${esc(event.away)} <i>vs</i> ${esc(event.home)}</strong><div>${markets}</div></article>`;
     }).join('');
     return `<aside class="market-panel"><header><div><p>PUBLIC LINE FEED</p><h2>Market wire</h2></div><span>${marketEvents.length} EVENTS</span></header>${rows ? `<div class="market-window"><div class="market-track">${rows}${rows}</div></div>` : '<p class="empty-state">No betting markets are currently supplied.</p>'}<footer><span>SPREADS · TOTALS · MONEYLINES</span><b>BOOKMAKER FEED CONNECTING</b></footer></aside>`;
   }
@@ -172,7 +182,7 @@
     const pages = Math.max(1, Math.ceil(stories.length / 2));
     storyPage %= pages;
     const visible = stories.slice(storyPage * 2, storyPage * 2 + 2);
-    const cards = visible.map(story => `<article class="visual-story">${story.image ? `<div class="story-photo" style="background-image:linear-gradient(180deg,transparent,rgba(4,12,20,.82)),url('${esc(story.image)}')"></div>` : '<div class="story-photo story-photo-empty"></div>'}<div class="story-copy"><span>${esc(story.league || 'SPORTS')}</span><h3>${esc(story.headline)}</h3><p>${esc(story.description || 'Live sports update.')}</p><small>${esc(story.byline || 'LIVE NEWS FEED')} · ${story.published ? esc(new Intl.DateTimeFormat('en-US',{timeZone:tz,hour:'numeric',minute:'2-digit'}).format(new Date(story.published))) + ` ${zone}` : 'UPDATED TODAY'}</small></div></article>`).join('');
+    const cards = visible.map(story => `<article class="visual-story">${story.image ? `<div class="story-photo" style="background-image:linear-gradient(180deg,transparent,rgba(4,12,20,.82)),url('${esc(story.image)}')"></div>` : '<div class="story-photo story-photo-empty"></div>'}<div class="story-copy"><span>${esc(leagueNames[story.league] || story.league || 'SPORTS')}</span><h3>${esc(story.headline)}</h3><p>${esc(story.description || 'Live sports update.')}</p><small>${esc(story.byline || 'LIVE NEWS FEED')} · ${story.published ? esc(new Intl.DateTimeFormat('en-US',{timeZone:tz,hour:'numeric',minute:'2-digit'}).format(new Date(story.published))) + ` ${zone}` : 'UPDATED TODAY'}</small></div></article>`).join('');
     return `<section class="section stories-section"><header class="section-head"><div><p>LIVE EDITORIAL</p><h2>Stories & alerts</h2></div><span>${stories.length} STORIES · PAGE ${storyPage + 1}/${pages}</span></header><div class="story-grid">${cards || '<p class="empty-state">No verified stories are available.</p>'}</div></section>`;
   }
 
@@ -182,7 +192,7 @@
       const games = events.filter(event => event.league === league).slice(0, 8);
       if (!games.length) return '';
       const items = games.map(event => `<span><b>${esc(event.away)} ${esc(event.score || 'vs')} ${esc(event.home)}</b><i>${esc(isLive(event) ? event.detail || event.status : `${shortTime(event)} ${zone}`)}</i></span>`).join('');
-      return `<div class="ticker-lane"><strong>${esc(league === 'NCAAF' ? 'COLLEGE' : league)}</strong><div><div class="ticker-track">${items}${items}</div></div></div>`;
+      return `<div class="ticker-lane"><strong>${esc(leagueNames[league] || league)}</strong><div><div class="ticker-track">${items}${items}</div></div></div>`;
     }).join('');
     return lanes ? `<section class="ticker-band" aria-label="Live sports tickers">${lanes}</section>` : '';
   }
@@ -199,10 +209,10 @@
     const boardLeague = selectedLeague === 'ALL' ? featureEvent?.league || 'NFL' : selectedLeague;
     dashboard.innerHTML = `
       <header class="masthead">
-        <div class="brand"><img src="assets/varycreative-mark.svg" alt="VC"><div><strong>VARYCAVE <span>SPORTSCENTER</span></strong><small id="currentDate">LOADING DATE</small></div></div>
+        <div class="brand"><img src="assets/varycave-glass-vc.png" alt="VaryCave VC"><div><strong>VaryCave <span>SportsCenter</span></strong><small id="currentDate">LOADING DATE</small></div></div>
         <div class="system-status"><div><span class="status-dot"></span><b>${esc(source)} DATA</b><small id="freshness">UPDATED NOW</small></div><time id="clock">--:--</time></div>
       </header>
-      <nav class="league-nav" aria-label="Sports">${['ALL',...sports].map(sport => {const count=(data.events||[]).filter(e=>(sport==='ALL'||e.league===sport)&&isLive(e)).length;return `<button class="${selectedLeague===sport?'active':''}" data-league="${sport}"><span>${esc(leagueNames[sport]||sport)}</span>${count?`<b>${count} LIVE</b>`:'<small>VIEW</small>'}</button>`}).join('')}</nav>
+      <nav class="league-nav" aria-label="Sports">${['ALL',...sports].map(sport => {const count=(data.events||[]).filter(e=>(sport==='ALL'||e.league===sport)&&isLive(e)).length;return `<button class="${selectedLeague===sport?'active':''}" data-league="${sport}"><span class="nav-sport"><img src="${esc(leagueLogos[sport] || leagueLogos.ALL)}" alt=""><strong>${esc(leagueNames[sport]||sport)}</strong></span>${count?`<b>${count} LIVE</b>`:'<small>VIEW</small>'}</button>`}).join('')}</nav>
       <section class="command-grid">
         <aside class="scoreboard-panel"><header><div><p>${live.length ? `${live.length} LIVE NOW` : 'AROUND SPORTS'}</p><h2>Scoreboard</h2></div><span>${live.length ? `PAGE ${scoreboardPage + 1} / ${scoreboard.pages}` : 'ALL SPORTS'}</span></header><div class="score-grid">${scoreEvents.map(scoreCard).join('') || '<p class="empty-state">No events available.</p>'}</div></aside>
         ${featured(featureEvent)}

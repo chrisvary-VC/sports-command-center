@@ -38,17 +38,18 @@
   const source = window.VARYCAVE_DATA_SOURCE || 'DEMO';
   const cleanTeamName = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-  function marketTeam(name, league, suppliedLogo = '') {
+  function marketTeam(name, league, suppliedLogo = '', suppliedCode = '') {
     const target = cleanTeamName(name);
+    const displayAliases = { michigan:'MICH', wmichigan:'WMU', westernmichigan:'WMU' };
     const eventMatch = (data.events || []).find(event => event.league === league && [event.awayName,event.homeName].some(team => {
       const clean = cleanTeamName(team);
       return clean && (clean === target || clean.includes(target) || target.includes(clean));
     }));
-    let code = '';
+    let code = displayAliases[target] || suppliedCode;
     let teamLogo = suppliedLogo;
     if (eventMatch) {
       const awayMatch = [eventMatch.awayName,eventMatch.away].some(team => target.includes(cleanTeamName(team)) || cleanTeamName(team).includes(target));
-      code = awayMatch ? eventMatch.away : eventMatch.home;
+      code = displayAliases[target] || (awayMatch ? eventMatch.away : eventMatch.home);
       teamLogo ||= awayMatch ? eventMatch.awayLogo : eventMatch.homeLogo;
     }
     if (!teamLogo) {
@@ -58,7 +59,7 @@
       });
       if (standingEntry) { code = standingEntry[0]; teamLogo = standingEntry[1].logo; }
     }
-    return `<span class="market-team">${logo(code || String(name).slice(0,3).toUpperCase(), teamLogo)}<b>${esc(name)}</b></span>`;
+    return `<span class="market-team" title="${esc(name)}">${logo(code || String(name).slice(0,3).toUpperCase(), teamLogo)}<b>${esc(code || name)}</b></span>`;
   }
 
   function reasonFor(event) {
@@ -175,7 +176,7 @@
         event.odds.total ? `<span><small>TOTAL</small><b>${esc(event.odds.total)}</b></span>` : '',
         event.odds.moneyline ? `<span><small>MONEYLINE</small><b>${esc(event.odds.moneyline)}</b></span>` : ''
       ].join('');
-      return `<article class="market-row"><header><b>${esc(leagueNames[event.league] || event.league)}</b><span>#${String(index + 1).padStart(3,'0')} · ${esc(shortTime(event))} ${zone}</span></header><div class="market-matchup">${marketTeam(event.awayName || event.away,event.league,event.awayLogo)}<i>vs</i>${marketTeam(event.homeName || event.home,event.league,event.homeLogo)}</div><div class="market-lines">${markets}</div></article>`;
+      return `<article class="market-row"><header><b>${esc(leagueNames[event.league] || event.league)}</b><span>#${String(index + 1).padStart(3,'0')} · ${esc(shortTime(event))} ${zone}</span></header><div class="market-matchup">${marketTeam(event.awayName || event.away,event.league,event.awayLogo,event.away)}<i>vs</i>${marketTeam(event.homeName || event.home,event.league,event.homeLogo,event.home)}</div><div class="market-lines">${markets}</div></article>`;
     }).join('');
     return `<aside class="market-panel"><header><div><p>PUBLIC LINE FEED</p><h2>Market wire</h2></div><span>${marketEvents.length} EVENTS</span></header>${rows ? `<div class="market-window"><div class="market-track">${rows}${rows}</div></div>` : '<p class="empty-state">No betting markets are currently supplied.</p>'}<footer><span>SPREADS · TOTALS · MONEYLINES</span><b>BOOKMAKER FEED CONNECTING</b></footer></aside>`;
   }
